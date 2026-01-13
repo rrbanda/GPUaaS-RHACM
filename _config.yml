@@ -2,8 +2,12 @@
 title: GPUaaS with RHACM
 description: GPU-as-a-Service using MultiKueue and Red Hat Advanced Cluster Management
 
-# Use Just the Docs theme
-theme: just-the-docs
+# Use Just the Docs theme (remote_theme for GitHub Pages compatibility)
+remote_theme: just-the-docs/just-the-docs
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
 
 # Repository info
 repository: rrbanda/GPUaaS-RHACM
