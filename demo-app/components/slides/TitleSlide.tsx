@@ -1,12 +1,20 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { theme } from '../diagrams/slides/shared/theme';
 
 type Persona = 'admin' | 'scientist' | 'all';
 
 export default function TitleSlide({ persona }: { persona: Persona }) {
   return (
-    <div className="h-full flex flex-col items-center justify-center text-center px-8 overflow-hidden relative">
+    <div 
+      className="h-full flex flex-col items-center justify-center text-center px-8 overflow-hidden relative"
+      style={{ 
+        backgroundColor: theme.background,
+        backgroundImage: `radial-gradient(ellipse at top right, ${theme.purple}20 0%, transparent 50%),
+                          radial-gradient(ellipse at bottom left, ${theme.redHatRed}15 0%, transparent 50%)`
+      }}
+    >
       {/* Floating GPU icons */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[...Array(12)].map((_, i) => (
@@ -41,15 +49,20 @@ export default function TitleSlide({ persona }: { persona: Persona }) {
         transition={{ duration: 0.8, delay: 0.2 }}
         className="mb-8"
       >
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight">
-          <span className="block text-gray-400 text-xl md:text-2xl font-medium mb-4 tracking-wide">
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight">
+          <span className="block text-xl md:text-2xl font-medium mb-4 tracking-wide" style={{ color: theme.gray400 }}>
             Red Hat Advanced Cluster Management
           </span>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-amber-400 to-red-500">
+          <span 
+            className="bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(90deg, ${theme.redHatRed}, ${theme.goldAmber}, ${theme.redHatRed})` }}
+          >
             GPU-as-a-Service
           </span>
           <br />
-          <span className="text-white text-4xl md:text-5xl lg:text-6xl">with MultiKueue</span>
+          <span className="text-4xl md:text-5xl lg:text-6xl" style={{ color: theme.white }}>
+            with MultiKueue
+          </span>
         </h1>
       </motion.div>
 
@@ -61,11 +74,20 @@ export default function TitleSlide({ persona }: { persona: Persona }) {
         className="max-w-3xl mb-12"
       >
         <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-red-600/20 to-amber-600/20 rounded-2xl blur-xl" />
-          <div className="relative glass rounded-xl p-6">
-            <p className="text-xl md:text-2xl text-gray-200 leading-relaxed">
-              Intelligent <span className="text-red-400 font-semibold">multi-cluster workload scheduling</span> for{' '}
-              <span className="text-amber-400 font-semibold">AI/ML training jobs</span>
+          <div 
+            className="absolute -inset-1 rounded-2xl blur-xl" 
+            style={{ background: `linear-gradient(90deg, ${theme.redHatRed}20, ${theme.goldAmber}20)` }}
+          />
+          <div 
+            className="relative rounded-xl p-6 border"
+            style={{ 
+              backgroundColor: `${theme.backgroundCard}cc`,
+              borderColor: `${theme.gray700}50`
+            }}
+          >
+            <p className="text-xl md:text-2xl leading-relaxed" style={{ color: theme.gray200 }}>
+              Intelligent <span style={{ color: theme.redHatRed }} className="font-semibold">multi-cluster workload scheduling</span> for{' '}
+              <span style={{ color: theme.goldAmber }} className="font-semibold">AI/ML training jobs</span>
             </p>
           </div>
         </div>
@@ -89,13 +111,20 @@ export default function TitleSlide({ persona }: { persona: Persona }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 + index * 0.1 }}
-            className="group relative px-5 py-4 rounded-xl glass hover:border-red-500/30 transition-all duration-300"
+            className="group relative px-5 py-4 rounded-xl transition-all duration-300 border"
+            style={{ 
+              backgroundColor: `${theme.backgroundCard}80`,
+              borderColor: `${theme.gray700}50`
+            }}
           >
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-500/0 to-amber-500/0 group-hover:from-red-500/5 group-hover:to-amber-500/5 transition-all duration-300" />
+            <div 
+              className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300"
+              style={{ background: `linear-gradient(135deg, ${theme.redHatRed}10, ${theme.goldAmber}10)` }}
+            />
             <div className="relative">
               <span className="text-3xl mb-2 block">{item.icon}</span>
-              <h3 className="text-white font-semibold text-sm">{item.title}</h3>
-              <p className="text-gray-500 text-xs">{item.subtitle}</p>
+              <h3 className="font-semibold text-sm" style={{ color: theme.white }}>{item.title}</h3>
+              <p className="text-xs" style={{ color: theme.gray500 }}>{item.subtitle}</p>
             </div>
           </motion.div>
         ))}
@@ -111,7 +140,8 @@ export default function TitleSlide({ persona }: { persona: Persona }) {
         <motion.div
           animate={{ y: [0, 5, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-          className="flex flex-col items-center gap-1 text-gray-500"
+          className="flex flex-col items-center gap-1"
+          style={{ color: theme.gray500 }}
         >
           <span className="text-xs">Press → to explore</span>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

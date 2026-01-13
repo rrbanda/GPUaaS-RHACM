@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ArchitectureDiagram from '@/components/diagrams/ArchitectureDiagram';
+import { theme } from '../diagrams/slides/shared/theme';
 
 type Persona = 'admin' | 'scientist' | 'all';
 
@@ -81,20 +82,30 @@ export default function ArchitectureSlide({ persona }: { persona: Persona }) {
   const step = steps[currentStep];
 
   return (
-    <div className="h-full flex flex-col px-8 py-4">
+    <div 
+      className="h-full flex flex-col px-8 py-4"
+      style={{ 
+        backgroundColor: theme.background,
+        backgroundImage: `radial-gradient(ellipse at top right, ${theme.purple}15 0%, transparent 50%),
+                          radial-gradient(ellipse at bottom left, ${theme.redHatRed}10 0%, transparent 50%)`
+      }}
+    >
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-4"
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+        <h2 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: theme.white }}>
           Architecture{' '}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-amber-500">
+          <span 
+            className="bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(90deg, ${theme.redHatRed}, ${theme.goldAmber})` }}
+          >
             Step by Step
           </span>
         </h2>
-        <p className="text-gray-400">
+        <p style={{ color: theme.gray400 }}>
           Watch how GPU-as-a-Service is built progressively
         </p>
       </motion.div>
@@ -105,13 +116,15 @@ export default function ArchitectureSlide({ persona }: { persona: Persona }) {
           <button
             key={s.id}
             onClick={() => setCurrentStep(i)}
-            className={`w-8 h-1.5 rounded-full transition-all duration-300 ${
-              i === currentStep
-                ? 'bg-gradient-to-r from-red-500 to-amber-500 w-12'
-                : i < currentStep
-                ? 'bg-red-500/50'
-                : 'bg-gray-700'
-            }`}
+            className="h-1.5 rounded-full transition-all duration-300"
+            style={{ 
+              width: i === currentStep ? '48px' : '32px',
+              background: i === currentStep 
+                ? `linear-gradient(90deg, ${theme.redHatRed}, ${theme.goldAmber})`
+                : i < currentStep 
+                ? `${theme.redHatRed}80` 
+                : theme.gray700
+            }}
           />
         ))}
       </div>
@@ -119,7 +132,13 @@ export default function ArchitectureSlide({ persona }: { persona: Persona }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0">
         {/* Interactive Diagram */}
-        <div className="flex-1 relative glass rounded-2xl overflow-hidden">
+        <div 
+          className="flex-1 relative rounded-2xl overflow-hidden border"
+          style={{ 
+            backgroundColor: `${theme.backgroundCard}cc`,
+            borderColor: `${theme.gray700}50`
+          }}
+        >
           <ArchitectureDiagram step={step.id} />
         </div>
 
@@ -132,20 +151,36 @@ export default function ArchitectureSlide({ persona }: { persona: Persona }) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="glass rounded-xl p-6 mb-4"
+              className="rounded-xl p-6 mb-4 border"
+              style={{ 
+                backgroundColor: `${theme.backgroundCard}cc`,
+                borderColor: `${theme.gray700}50`
+              }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <span className="w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-amber-500 flex items-center justify-center text-white font-bold">
+                <span 
+                  className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${theme.redHatRed}, ${theme.goldAmber})`,
+                    color: theme.white
+                  }}
+                >
                   {step.id}
                 </span>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs" style={{ color: theme.gray500 }}>
                   Step {step.id} of {steps.length}
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-              <p className="text-gray-400 mb-4">{step.description}</p>
-              <div className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <span className="text-amber-400 text-sm">💡 {step.highlight}</span>
+              <h3 className="text-xl font-bold mb-2" style={{ color: theme.white }}>{step.title}</h3>
+              <p className="mb-4" style={{ color: theme.gray400 }}>{step.description}</p>
+              <div 
+                className="px-3 py-2 rounded-lg border"
+                style={{ 
+                  backgroundColor: `${theme.goldAmber}10`,
+                  borderColor: `${theme.goldAmber}20`
+                }}
+              >
+                <span className="text-sm" style={{ color: theme.goldAmber }}>💡 {step.highlight}</span>
               </div>
             </motion.div>
           </AnimatePresence>
@@ -157,11 +192,13 @@ export default function ArchitectureSlide({ persona }: { persona: Persona }) {
               disabled={currentStep === 0}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`flex-1 py-3 rounded-xl font-medium transition-all ${
-                currentStep === 0
-                  ? 'bg-gray-800/30 text-gray-600 cursor-not-allowed'
-                  : 'glass text-gray-300 hover:text-white'
-              }`}
+              className="flex-1 py-3 rounded-xl font-medium transition-all border"
+              style={{ 
+                backgroundColor: currentStep === 0 ? `${theme.gray800}30` : `${theme.backgroundCard}cc`,
+                borderColor: `${theme.gray700}50`,
+                color: currentStep === 0 ? theme.gray600 : theme.gray300,
+                cursor: currentStep === 0 ? 'not-allowed' : 'pointer'
+              }}
             >
               ← Previous
             </motion.button>
@@ -170,11 +207,14 @@ export default function ArchitectureSlide({ persona }: { persona: Persona }) {
               disabled={currentStep === steps.length - 1}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`flex-1 py-3 rounded-xl font-medium transition-all ${
-                currentStep === steps.length - 1
-                  ? 'bg-gray-800/30 text-gray-600 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-red-600 to-amber-600 text-white'
-              }`}
+              className="flex-1 py-3 rounded-xl font-medium transition-all"
+              style={{ 
+                background: currentStep === steps.length - 1 
+                  ? `${theme.gray800}30` 
+                  : `linear-gradient(90deg, ${theme.redHatRed}, ${theme.goldAmber})`,
+                color: currentStep === steps.length - 1 ? theme.gray600 : theme.white,
+                cursor: currentStep === steps.length - 1 ? 'not-allowed' : 'pointer'
+              }}
             >
               Next →
             </motion.button>
@@ -184,14 +224,16 @@ export default function ArchitectureSlide({ persona }: { persona: Persona }) {
           <div className="mt-4 flex gap-2 justify-center">
             <button
               onClick={() => setCurrentStep(0)}
-              className="text-xs text-gray-500 hover:text-red-400 transition-colors"
+              className="text-xs transition-colors hover:opacity-80"
+              style={{ color: theme.gray500 }}
             >
               ← Start
             </button>
-            <span className="text-gray-700">|</span>
+            <span style={{ color: theme.gray700 }}>|</span>
             <button
               onClick={() => setCurrentStep(steps.length - 1)}
-              className="text-xs text-gray-500 hover:text-amber-400 transition-colors"
+              className="text-xs transition-colors hover:opacity-80"
+              style={{ color: theme.gray500 }}
             >
               Final →
             </button>

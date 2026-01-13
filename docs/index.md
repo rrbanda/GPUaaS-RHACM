@@ -4,13 +4,13 @@
 
 <div class="grid cards" markdown>
 
-- :material-play-circle:{ .lg .middle } **Interactive Demo**
+- :material-play-circle:{ .lg .middle } **Interactive Architecture & Demo**
 
     ---
 
-    Experience the architecture and job flow visually with our rich interactive demo
+    Explore the complete MultiKueue architecture with 9 progressive slides, persona-based workflows, and interactive job flow simulation - all in one unified experience
 
-    [:octicons-arrow-right-24: Launch Demo](demo/index.html){ .md-button .md-button--primary }
+    [:octicons-arrow-right-24: Explore Now](demo/index.html){ .md-button .md-button--primary }
 
 </div>
 

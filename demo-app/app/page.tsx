@@ -3,25 +3,57 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import TitleSlide from '@/components/slides/TitleSlide';
-import ArchitectureSlide from '@/components/slides/ArchitectureSlide';
 import PersonaSlide from '@/components/slides/PersonaSlide';
 import DemoSlide from '@/components/slides/DemoSlide';
 import PersonaToggle from '@/components/ui/PersonaToggle';
+import { theme } from '@/components/diagrams/slides/shared/theme';
+
+// Import all 9 architecture slides
+import Slide1 from '@/components/diagrams/slides/Slide1';
+import Slide2 from '@/components/diagrams/slides/Slide2';
+import Slide3 from '@/components/diagrams/slides/Slide3';
+import Slide4 from '@/components/diagrams/slides/Slide4';
+import Slide5 from '@/components/diagrams/slides/Slide5';
+import Slide6 from '@/components/diagrams/slides/Slide6';
+import Slide7 from '@/components/diagrams/slides/Slide7';
+import Slide8 from '@/components/diagrams/slides/Slide8';
+import Slide9 from '@/components/diagrams/slides/Slide9';
 
 type Persona = 'admin' | 'scientist' | 'all';
 
-interface Slide {
+interface SlideInfo {
   id: string;
   title: string;
-  component: React.ComponentType<{ persona: Persona }>;
+  subtitle?: string;
+  section: 'intro' | 'architecture' | 'personas' | 'interactive';
 }
 
-const slides: Slide[] = [
-  { id: 'title', title: 'GPU-as-a-Service', component: TitleSlide },
-  { id: 'architecture', title: 'Architecture', component: ArchitectureSlide },
-  { id: 'personas', title: 'Use Cases', component: PersonaSlide },
-  { id: 'demo', title: 'Interactive Demo', component: DemoSlide },
+// Unified slide structure: Intro → 9 Architecture Slides → Personas → Interactive
+const slideInfo: SlideInfo[] = [
+  { id: 'intro', title: 'GPU-as-a-Service', subtitle: 'Introduction', section: 'intro' },
+  { id: 'arch-1', title: 'Infrastructure', subtitle: 'Step 1/9', section: 'architecture' },
+  { id: 'arch-2', title: 'Enable Addon', subtitle: 'Step 2/9', section: 'architecture' },
+  { id: 'arch-3', title: 'Kueue Setup', subtitle: 'Step 3/9', section: 'architecture' },
+  { id: 'arch-4', title: 'Placements', subtitle: 'Step 4/9', section: 'architecture' },
+  { id: 'arch-5', title: 'Queues', subtitle: 'Step 5/9', section: 'architecture' },
+  { id: 'arch-6', title: 'Entry Points', subtitle: 'Step 6/9', section: 'architecture' },
+  { id: 'arch-7', title: 'Job Flow', subtitle: 'Step 7/9', section: 'architecture' },
+  { id: 'arch-8', title: 'Complete', subtitle: 'Step 8/9', section: 'architecture' },
+  { id: 'arch-9', title: 'Summary', subtitle: 'Step 9/9', section: 'architecture' },
+  { id: 'personas', title: 'Two Personas', subtitle: 'Use Cases', section: 'personas' },
+  { id: 'interactive', title: 'Try It', subtitle: 'Interactive Mode', section: 'interactive' },
 ];
+
+// Get section colors using theme
+const getSectionGradient = (section: string) => {
+  switch (section) {
+    case 'intro': return `linear-gradient(90deg, ${theme.redHatRed}, ${theme.goldAmber})`;
+    case 'architecture': return `linear-gradient(90deg, ${theme.purple}, ${theme.cpuBlue})`;
+    case 'personas': return `linear-gradient(90deg, ${theme.gpuGreen}, ${theme.teal})`;
+    case 'interactive': return `linear-gradient(90deg, ${theme.goldAmber}, ${theme.redHatRed})`;
+    default: return `linear-gradient(90deg, ${theme.gray500}, ${theme.gray600})`;
+  }
+};
 
 export default function Home() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -35,7 +67,7 @@ export default function Home() {
   }, []);
 
   const handleNext = useCallback(() => {
-    if (currentSlideIndex < slides.length - 1) {
+    if (currentSlideIndex < slideInfo.length - 1) {
       setDirection(1);
       setCurrentSlideIndex(prev => prev + 1);
     }
@@ -55,16 +87,22 @@ export default function Home() {
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       handlePrevious();
+    } else if (e.key >= '1' && e.key <= '9') {
+      const slideNum = parseInt(e.key);
+      if (slideNum <= slideInfo.length) {
+        setDirection(slideNum - 1 > currentSlideIndex ? 1 : -1);
+        setCurrentSlideIndex(slideNum - 1);
+      }
     }
-  }, [handleNext, handlePrevious]);
+  }, [handleNext, handlePrevious, currentSlideIndex]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const currentSlide = slides[currentSlideIndex];
-  const progress = ((currentSlideIndex + 1) / slides.length) * 100;
+  const currentSlide = slideInfo[currentSlideIndex];
+  const progress = ((currentSlideIndex + 1) / slideInfo.length) * 100;
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -81,29 +119,73 @@ export default function Home() {
     }),
   };
 
+  // Render the current slide component
+  const renderSlide = () => {
+    switch (currentSlide.id) {
+      case 'intro':
+        return <TitleSlide persona={persona} />;
+      case 'arch-1':
+        return <div className="h-full flex items-center justify-center"><Slide1 /></div>;
+      case 'arch-2':
+        return <div className="h-full flex items-center justify-center"><Slide2 /></div>;
+      case 'arch-3':
+        return <div className="h-full flex items-center justify-center"><Slide3 /></div>;
+      case 'arch-4':
+        return <div className="h-full flex items-center justify-center"><Slide4 /></div>;
+      case 'arch-5':
+        return <div className="h-full flex items-center justify-center"><Slide5 /></div>;
+      case 'arch-6':
+        return <div className="h-full flex items-center justify-center"><Slide6 /></div>;
+      case 'arch-7':
+        return <div className="h-full flex items-center justify-center"><Slide7 /></div>;
+      case 'arch-8':
+        return <div className="h-full flex items-center justify-center"><Slide8 /></div>;
+      case 'arch-9':
+        return <div className="h-full flex items-center justify-center"><Slide9 /></div>;
+      case 'personas':
+        return <PersonaSlide persona={persona} />;
+      case 'interactive':
+        return <DemoSlide persona={persona} />;
+      default:
+        return null;
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div 
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: theme.background }}
+      >
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex flex-col items-center gap-4"
         >
-          <div className="w-12 h-12 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
-          <p className="text-gray-400">Loading GPU-as-a-Service Demo...</p>
+          <div 
+            className="w-12 h-12 rounded-full animate-spin"
+            style={{ 
+              border: `2px solid ${theme.redHatRed}30`,
+              borderTopColor: theme.redHatRed
+            }}
+          />
+          <p style={{ color: theme.gray400 }}>Loading GPU-as-a-Service Demo...</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-[#0a0a0f] overflow-hidden relative">
+    <div 
+      className="h-screen overflow-hidden relative"
+      style={{ backgroundColor: theme.background }}
+    >
       {/* Animated Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <motion.div
           className="absolute w-[800px] h-[800px] rounded-full"
           style={{
-            background: 'radial-gradient(circle, rgba(238,0,0,0.08) 0%, transparent 70%)',
+            background: `radial-gradient(circle, ${theme.redHatRed}15 0%, transparent 70%)`,
             top: '-20%',
             right: '-20%',
           }}
@@ -117,7 +199,7 @@ export default function Home() {
         <motion.div
           className="absolute w-[600px] h-[600px] rounded-full"
           style={{
-            background: 'radial-gradient(circle, rgba(251,191,36,0.06) 0%, transparent 70%)',
+            background: `radial-gradient(circle, ${theme.goldAmber}10 0%, transparent 70%)`,
             bottom: '-10%',
             left: '-15%',
           }}
@@ -127,52 +209,68 @@ export default function Home() {
           }}
           transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
         />
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 grid-pattern opacity-50" />
       </div>
 
-      {/* Persona Toggle - top right */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: currentSlideIndex > 0 ? 1 : 0, y: currentSlideIndex > 0 ? 0 : -20 }}
-        className="fixed top-4 right-4 z-50"
+      {/* Header - Title & Section indicator */}
+      <header 
+        className="fixed top-0 left-0 right-0 z-50"
+        style={{ 
+          background: `linear-gradient(to bottom, ${theme.background}, ${theme.background}e6, transparent)`
+        }}
       >
-        <PersonaToggle selected={persona} onSelect={setPersona} />
-      </motion.div>
+        <div className="flex items-center justify-between px-6 py-3">
+          {/* Left: Logo & Title */}
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: `linear-gradient(135deg, ${theme.redHatRed}, ${theme.redHatRedDark})` }}
+            >
+              <span className="text-white font-bold text-xs">RH</span>
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold" style={{ color: theme.white }}>MultiKueue Architecture</h1>
+              <p className="text-xs" style={{ color: theme.gray500 }}>{currentSlide.subtitle}</p>
+            </div>
+          </div>
 
-      {/* Slide indicator dots - top center */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2"
-      >
-        {slides.map((slide, index) => (
-          <button
-            key={slide.id}
-            onClick={() => {
-              setDirection(index > currentSlideIndex ? 1 : -1);
-              setCurrentSlideIndex(index);
-            }}
-            className={`relative group transition-all duration-300 ${
-              index === currentSlideIndex ? 'scale-110' : ''
-            }`}
-          >
-            <div className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentSlideIndex
-                ? 'bg-gradient-to-r from-red-500 to-amber-500'
-                : index < currentSlideIndex
-                ? 'bg-red-500/50'
-                : 'bg-gray-700'
-            }`} />
-            <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              {slide.title}
-            </span>
-          </button>
-        ))}
-      </motion.div>
+          {/* Center: Slide dots */}
+          <div className="flex items-center gap-1">
+            {slideInfo.map((slide, index) => (
+              <button
+                key={slide.id}
+                onClick={() => {
+                  setDirection(index > currentSlideIndex ? 1 : -1);
+                  setCurrentSlideIndex(index);
+                }}
+                className="transition-all duration-300 rounded-full"
+                style={{
+                  width: index === currentSlideIndex ? '24px' : '8px',
+                  height: '8px',
+                  background: index === currentSlideIndex 
+                    ? getSectionGradient(slide.section)
+                    : index < currentSlideIndex
+                    ? theme.gray500
+                    : theme.gray700
+                }}
+                title={slide.title}
+              />
+            ))}
+          </div>
+
+          {/* Right: Persona Toggle */}
+          <div className="flex items-center gap-3">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: currentSlideIndex > 0 ? 1 : 0 }}
+            >
+              <PersonaToggle selected={persona} onSelect={setPersona} />
+            </motion.div>
+          </div>
+        </div>
+      </header>
 
       {/* Main slide area */}
-      <main className="h-full pt-16 pb-24 relative z-10">
+      <main className="h-full pt-14 pb-20 relative z-10">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={currentSlideIndex}
@@ -187,84 +285,128 @@ export default function Home() {
             }}
             className="h-full"
           >
-            {currentSlide && <currentSlide.component persona={persona} />}
+            {renderSlide()}
           </motion.div>
         </AnimatePresence>
       </main>
 
-      {/* Progress bar */}
-      <div className="fixed bottom-20 left-0 right-0 z-40 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+      {/* Footer Navigation */}
+      <footer 
+        className="fixed bottom-0 left-0 right-0 z-50"
+        style={{ 
+          background: `linear-gradient(to top, ${theme.background}, ${theme.background}e6, transparent)`
+        }}
+      >
+        {/* Progress bar */}
+        <div className="px-6 pb-2">
+          <div 
+            className="h-0.5 rounded-full overflow-hidden"
+            style={{ backgroundColor: theme.gray800 }}
+          >
             <motion.div
-              className="h-full bg-gradient-to-r from-red-500 via-amber-500 to-red-500"
+              className="h-full"
+              style={{ background: getSectionGradient(currentSlide.section) }}
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.3 }}
             />
           </div>
         </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center gap-4 py-4 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/80 to-transparent">
-        <motion.button
-          onClick={handlePrevious}
-          disabled={currentSlideIndex === 0}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all ${
-            currentSlideIndex === 0
-              ? 'bg-gray-800/30 text-gray-600 cursor-not-allowed'
-              : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white border border-gray-700/50'
-          }`}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <span className="text-sm">Previous</span>
-        </motion.button>
+        <div className="flex items-center justify-between px-6 py-3">
+          {/* Left: Section badges */}
+          <div className="flex items-center gap-2">
+            {[
+              { id: 'intro', label: '🎯 Intro' },
+              { id: 'architecture', label: '🏗️ Architecture' },
+              { id: 'personas', label: '👥 Personas' },
+              { id: 'interactive', label: '🎮 Interactive' },
+            ].map((section) => (
+              <button
+                key={section.id}
+                onClick={() => {
+                  const idx = slideInfo.findIndex(s => s.section === section.id);
+                  if (idx !== -1) {
+                    setDirection(idx > currentSlideIndex ? 1 : -1);
+                    setCurrentSlideIndex(idx);
+                  }
+                }}
+                className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+                style={{ 
+                  background: currentSlide.section === section.id 
+                    ? getSectionGradient(section.id) 
+                    : `${theme.gray800}80`,
+                  color: currentSlide.section === section.id 
+                    ? theme.white 
+                    : theme.gray500
+                }}
+              >
+                {section.label}
+              </button>
+            ))}
+          </div>
 
-        <motion.button
-          onClick={handleNext}
-          disabled={currentSlideIndex === slides.length - 1}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all ${
-            currentSlideIndex === slides.length - 1
-              ? 'bg-gray-800/30 text-gray-600 cursor-not-allowed'
-              : 'bg-gradient-to-r from-red-600 to-amber-600 text-white hover:from-red-500 hover:to-amber-500 shadow-lg shadow-red-500/20'
-          }`}
-        >
-          <span className="text-sm">Next</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </motion.button>
-      </nav>
+          {/* Center: Navigation */}
+          <div className="flex items-center gap-3">
+            <motion.button
+              onClick={handlePrevious}
+              disabled={currentSlideIndex === 0}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all border"
+              style={{ 
+                backgroundColor: currentSlideIndex === 0 ? `${theme.gray800}30` : `${theme.gray800}80`,
+                borderColor: `${theme.gray700}50`,
+                color: currentSlideIndex === 0 ? theme.gray600 : theme.gray300,
+                cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span className="text-sm">Previous</span>
+            </motion.button>
 
-      {/* Keyboard hints */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.4 }}
-        transition={{ delay: 2 }}
-        className="fixed bottom-4 right-6 z-50 flex items-center gap-4 text-xs text-gray-600"
-      >
-        <a 
-          href={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/slides`}
-          className="flex items-center gap-1 hover:text-gray-400 transition-colors"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-          </svg>
-          All Slides
-        </a>
-        <span className="flex items-center gap-1">
-          <kbd className="px-1.5 py-0.5 bg-gray-800/50 rounded text-[10px] border border-gray-700/50">←</kbd>
-          <kbd className="px-1.5 py-0.5 bg-gray-800/50 rounded text-[10px] border border-gray-700/50">→</kbd>
-          Navigate
-        </span>
-      </motion.div>
+            <span className="text-sm" style={{ color: theme.gray600 }}>
+              {currentSlideIndex + 1} / {slideInfo.length}
+            </span>
+
+            <motion.button
+              onClick={handleNext}
+              disabled={currentSlideIndex === slideInfo.length - 1}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all"
+              style={{ 
+                background: currentSlideIndex === slideInfo.length - 1 
+                  ? `${theme.gray800}30` 
+                  : `linear-gradient(90deg, ${theme.redHatRed}, ${theme.goldAmber})`,
+                color: currentSlideIndex === slideInfo.length - 1 ? theme.gray600 : theme.white,
+                cursor: currentSlideIndex === slideInfo.length - 1 ? 'not-allowed' : 'pointer',
+                boxShadow: currentSlideIndex === slideInfo.length - 1 ? 'none' : `0 4px 20px ${theme.redHatRed}30`
+              }}
+            >
+              <span className="text-sm">Next</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </motion.button>
+          </div>
+
+          {/* Right: Keyboard hints */}
+          <div className="flex items-center gap-2 text-xs" style={{ color: theme.gray600 }}>
+            <kbd 
+              className="px-1.5 py-0.5 rounded text-[10px] border"
+              style={{ backgroundColor: `${theme.gray800}80`, borderColor: `${theme.gray700}50` }}
+            >←</kbd>
+            <kbd 
+              className="px-1.5 py-0.5 rounded text-[10px] border"
+              style={{ backgroundColor: `${theme.gray800}80`, borderColor: `${theme.gray700}50` }}
+            >→</kbd>
+            <span>Navigate</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -54,7 +54,7 @@ extra:
 
 nav:
   - Home: index.md
-  - "🎮 Interactive Demo": https://rrbanda.github.io/GPUaaS-RHACM/demo/
+  - "🎮 Architecture & Demo": https://rrbanda.github.io/GPUaaS-RHACM/demo/
   - Concepts: concepts.md
   - Prerequisites: 00-prerequisites.md
   - Architecture: 01-architecture.md

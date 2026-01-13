@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { theme } from '../diagrams/slides/shared/theme';
 
 type Persona = 'admin' | 'scientist' | 'all';
 
@@ -23,20 +24,30 @@ export default function PersonaSlide({ persona }: { persona: Persona }) {
   const showScientist = persona === 'scientist' || persona === 'all';
 
   return (
-    <div className="h-full flex flex-col px-8 py-4">
+    <div 
+      className="h-full flex flex-col px-8 py-4"
+      style={{ 
+        backgroundColor: theme.background,
+        backgroundImage: `radial-gradient(ellipse at top right, ${theme.purple}15 0%, transparent 50%),
+                          radial-gradient(ellipse at bottom left, ${theme.redHatRed}10 0%, transparent 50%)`
+      }}
+    >
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+        <h2 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: theme.white }}>
           Two Personas,{' '}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-amber-500">
+          <span 
+            className="bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(90deg, ${theme.redHatRed}, ${theme.goldAmber})` }}
+          >
             Clear Separation
           </span>
         </h2>
-        <p className="text-gray-400 max-w-2xl mx-auto">
+        <p style={{ color: theme.gray400 }} className="max-w-2xl mx-auto">
           RHACM is just the engine. Admins know Placement. Scientists know Kueue.
         </p>
       </motion.div>
@@ -51,14 +62,24 @@ export default function PersonaSlide({ persona }: { persona: Persona }) {
             transition={{ delay: 0.2 }}
             className="flex flex-col"
           >
-            <div className="glass rounded-2xl p-6 flex-1 glow-red">
+            <div 
+              className="rounded-2xl p-6 flex-1 border"
+              style={{ 
+                backgroundColor: `${theme.backgroundCard}cc`,
+                borderColor: `${theme.redHatRed}30`,
+                boxShadow: `0 0 40px ${theme.redHatRed}10`
+              }}
+            >
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-3xl">
+                <div 
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+                  style={{ background: `linear-gradient(135deg, ${theme.redHatRed}, ${theme.redHatRedDark})` }}
+                >
                   🔧
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-white">Hub Admin</h3>
-                  <p className="text-red-400">Knows: Placements, Clusters</p>
+                  <h3 className="text-2xl font-bold" style={{ color: theme.white }}>Hub Admin</h3>
+                  <p style={{ color: theme.redHatRed }}>Knows: Placements, Clusters</p>
                 </div>
               </div>
 
@@ -69,12 +90,16 @@ export default function PersonaSlide({ persona }: { persona: Persona }) {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 + i * 0.1 }}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] border border-red-500/10"
+                    className="flex items-start gap-3 p-3 rounded-lg border"
+                    style={{ 
+                      backgroundColor: `${theme.backgroundLight}80`,
+                      borderColor: `${theme.redHatRed}15`
+                    }}
                   >
                     <span className="text-2xl">{step.icon}</span>
                     <div>
-                      <div className="text-white font-medium">{step.title}</div>
-                      <div className="text-gray-500 text-sm">{step.description}</div>
+                      <div className="font-medium" style={{ color: theme.white }}>{step.title}</div>
+                      <div className="text-sm" style={{ color: theme.gray500 }}>{step.description}</div>
                     </div>
                   </motion.div>
                 ))}
@@ -84,10 +109,14 @@ export default function PersonaSlide({ persona }: { persona: Persona }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="mt-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20"
+                className="mt-6 p-4 rounded-lg border"
+                style={{ 
+                  backgroundColor: `${theme.redHatRed}10`,
+                  borderColor: `${theme.redHatRed}20`
+                }}
               >
-                <div className="text-sm text-red-400 font-medium">What they DON&apos;T need to know:</div>
-                <div className="text-gray-500 text-sm mt-1">
+                <div className="text-sm font-medium" style={{ color: theme.redHatRed }}>What they DON&apos;T need to know:</div>
+                <div className="text-sm mt-1" style={{ color: theme.gray500 }}>
                   Kueue internals, job YAML structure, data science workflows
                 </div>
               </motion.div>
@@ -103,14 +132,24 @@ export default function PersonaSlide({ persona }: { persona: Persona }) {
             transition={{ delay: 0.3 }}
             className="flex flex-col"
           >
-            <div className="glass rounded-2xl p-6 flex-1 glow-gold">
+            <div 
+              className="rounded-2xl p-6 flex-1 border"
+              style={{ 
+                backgroundColor: `${theme.backgroundCard}cc`,
+                borderColor: `${theme.goldAmber}30`,
+                boxShadow: `0 0 40px ${theme.goldAmber}10`
+              }}
+            >
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-3xl">
+                <div 
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+                  style={{ background: `linear-gradient(135deg, ${theme.goldAmber}, #B45309)` }}
+                >
                   🧪
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-white">Data Scientist</h3>
-                  <p className="text-amber-400">Knows: Kueue, LocalQueues</p>
+                  <h3 className="text-2xl font-bold" style={{ color: theme.white }}>Data Scientist</h3>
+                  <p style={{ color: theme.goldAmber }}>Knows: Kueue, LocalQueues</p>
                 </div>
               </div>
 
@@ -121,12 +160,16 @@ export default function PersonaSlide({ persona }: { persona: Persona }) {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + i * 0.1 }}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] border border-amber-500/10"
+                    className="flex items-start gap-3 p-3 rounded-lg border"
+                    style={{ 
+                      backgroundColor: `${theme.backgroundLight}80`,
+                      borderColor: `${theme.goldAmber}15`
+                    }}
                   >
                     <span className="text-2xl">{step.icon}</span>
                     <div>
-                      <div className="text-white font-medium">{step.title}</div>
-                      <div className="text-gray-500 text-sm">{step.description}</div>
+                      <div className="font-medium" style={{ color: theme.white }}>{step.title}</div>
+                      <div className="text-sm" style={{ color: theme.gray500 }}>{step.description}</div>
                     </div>
                   </motion.div>
                 ))}
@@ -136,10 +179,14 @@ export default function PersonaSlide({ persona }: { persona: Persona }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.1 }}
-                className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20"
+                className="mt-6 p-4 rounded-lg border"
+                style={{ 
+                  backgroundColor: `${theme.goldAmber}10`,
+                  borderColor: `${theme.goldAmber}20`
+                }}
               >
-                <div className="text-sm text-amber-400 font-medium">What they DON&apos;T need to know:</div>
-                <div className="text-gray-500 text-sm mt-1">
+                <div className="text-sm font-medium" style={{ color: theme.goldAmber }}>What they DON&apos;T need to know:</div>
+                <div className="text-sm mt-1" style={{ color: theme.gray500 }}>
                   Which clusters exist, how Placement works, networking, credentials
                 </div>
               </motion.div>
@@ -155,10 +202,16 @@ export default function PersonaSlide({ persona }: { persona: Persona }) {
         transition={{ delay: 1.2 }}
         className="mt-6 text-center"
       >
-        <div className="inline-block glass px-6 py-3 rounded-full">
-          <span className="text-gray-400">💡 </span>
-          <span className="text-white font-medium">Key Insight:</span>
-          <span className="text-gray-300"> RHACM is the engine that drives outcomes designed by these users</span>
+        <div 
+          className="inline-block px-6 py-3 rounded-full border"
+          style={{ 
+            backgroundColor: `${theme.backgroundCard}cc`,
+            borderColor: `${theme.gray700}50`
+          }}
+        >
+          <span style={{ color: theme.gray400 }}>💡 </span>
+          <span className="font-medium" style={{ color: theme.white }}>Key Insight:</span>
+          <span style={{ color: theme.gray300 }}> RHACM is the engine that drives outcomes designed by these users</span>
         </div>
       </motion.div>
     </div>

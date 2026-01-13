@@ -3,7 +3,7 @@
 **GPU-as-a-Service using MultiKueue and Red Hat Advanced Cluster Management**
 
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://rrbanda.github.io/GPUaaS-RHACM/)
-[![Interactive Demo](https://img.shields.io/badge/demo-Interactive-red)](https://rrbanda.github.io/GPUaaS-RHACM/demo/)
+[![Architecture & Demo](https://img.shields.io/badge/demo-Architecture%20%26%20Demo-red)](https://rrbanda.github.io/GPUaaS-RHACM/demo/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 
 ---
@@ -37,16 +37,17 @@ This repository demonstrates how to build a **GPU-as-a-Service (GPUaaS)** platfo
 
 ---
 
-## 🎮 Interactive Demo
+## 🎮 Interactive Architecture & Demo
 
-Experience the architecture and job flow visually:
+Explore the complete MultiKueue architecture and job flow in one unified experience:
 
-**[▶ Launch Interactive Demo](https://rrbanda.github.io/GPUaaS-RHACM/demo/)**
+**[▶ Explore Architecture & Demo](https://rrbanda.github.io/GPUaaS-RHACM/demo/)**
 
 Features:
-- 🏗️ **Progressive Architecture** - See how GPU-as-a-Service is built, step by step
-- 👥 **Persona Views** - Toggle between Hub Admin and Data Scientist perspectives  
-- ⚡ **Job Flow Simulator** - Click to simulate jobs routing to worker clusters
+- 🏗️ **9 Progressive Slides** - Watch how GPU-as-a-Service is built, step by step
+- 👥 **Persona Workflows** - Hub Admin creates Placements, Data Scientists submit to Kueues
+- 🤖 **AI Engineer Entry Points** - OpenShift AI + MCP Servers for AI agents
+- ⚡ **Interactive Job Flow** - Click to simulate jobs routing through the system
 
 ---
 
@@ -97,6 +98,12 @@ oc get managedclusters
 
 ```
 GPUaaS-RHACM/
+├── demo-app/                       # React interactive demo
+│   ├── app/                        # Next.js pages
+│   └── components/
+│       ├── diagrams/slides/        # 9 architecture slides (React)
+│       ├── slides/                 # PersonaSlide, DemoSlide
+│       └── ui/                     # PersonaToggle, shared components
 ├── docs/
 │   ├── index.md                    # Landing page
 │   ├── concepts.md                 # Core concepts
