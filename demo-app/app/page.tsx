@@ -192,34 +192,8 @@ export default function Home() {
         }}
       >
         <div className="flex items-center justify-between px-6 py-3 pointer-events-auto">
-          {/* Left: Logo & Title */}
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ 
-                background: `linear-gradient(135deg, ${theme.redHatRed}, ${theme.redHatRedDark})`,
-                boxShadow: `0 4px 15px ${theme.redHatRedGlow}`
-              }}
-            >
-              <span className="text-white font-bold text-sm">RH</span>
-            </div>
-            <div>
-              <h1 className="text-sm font-semibold" style={{ color: theme.white }}>
-                GPU-as-a-Service
-              </h1>
-              <div className="flex items-center gap-2">
-                <span 
-                  className="text-xs px-1.5 py-0.5 rounded"
-                  style={{ 
-                    background: getSectionGradient(currentSlide.section),
-                    color: theme.white
-                  }}
-                >
-                  {getSectionIcon(currentSlide.section)} {currentSlide.subtitle}
-                </span>
-              </div>
-            </div>
-          </div>
+          {/* Left: Spacer for balance */}
+          <div style={{ width: '80px' }} />
 
           {/* Center: Slide dots */}
           <div className="flex items-center gap-1.5">
