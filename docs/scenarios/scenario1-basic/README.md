@@ -2,11 +2,67 @@
 
 > **Difficulty:** ⭐ Beginner | **Time:** ~10 minutes
 
-## TL;DR - Quick Start
+---
+
+## Why This Scenario?
+
+In a multi-cluster environment, data scientists and ML engineers often face a common problem:
+
+> "I have a job to run, but I don't know which cluster to use or how to submit it there."
+
+**Basic MultiKueue solves this** by providing a single submission point on the hub cluster. Users submit jobs to a LocalQueue on the hub, and MultiKueue automatically dispatches them to available managed clusters.
+
+### The Problem
+
+| Without MultiKueue | With MultiKueue |
+|-------------------|-----------------|
+| Users must know which cluster to target | Users submit to a single hub queue |
+| Users need kubeconfig for each cluster | Users only need hub access |
+| Manual cluster selection and job tracking | Automatic dispatch and status sync |
+
+---
+
+## What You'll Learn
+
+In this scenario, you'll set up:
+
+1. **ClusterQueue** - A hub-side queue with resource quotas and admission checks
+2. **LocalQueue** - Where users submit their jobs (namespace-scoped)
+3. **AdmissionCheck** - Links the ClusterQueue to the MultiKueue controller
+
+The result: Jobs submitted to the hub are automatically dispatched to available spoke clusters.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  HUB CLUSTER                                                │
+│  ┌──────────────┐    ┌───────────────┐    ┌──────────────┐ │
+│  │ LocalQueue   │───▶│ ClusterQueue  │───▶│ MultiKueue   │ │
+│  │ (user submit)│    │ (quota/checks)│    │ Controller   │ │
+│  └──────────────┘    └───────────────┘    └──────┬───────┘ │
+└──────────────────────────────────────────────────┼─────────┘
+                                                   │
+                    ┌──────────────────────────────┼──────────┐
+                    ▼                              ▼          │
+           ┌──────────────┐               ┌──────────────┐   │
+           │ spoke-cluster1│              │ spoke-cluster2│  │
+           │ (GPU)         │              │ (CPU-only)    │  │
+           └──────────────┘               └──────────────┘   │
+```
+
+---
+
+## Prerequisites
+
+- RHACM hub with Kueue Addon installed ([Installation Guide](../../02-installation.md))
+- At least one managed cluster in a ManagedClusterSet
+
+---
+
+## Quick Start
 
 ```bash
-# From this directory
-cd scenarios/scenario1-basic
+# From the repo root
+cd docs/scenarios/scenario1-basic
 
 # 1. Apply Kueue resources
 oc apply -f manifests/
@@ -14,11 +70,17 @@ oc apply -f manifests/
 # 2. Submit test job
 oc create -f manifests/sample-job.yaml
 
-# 3. Watch workload
+# 3. Watch workload status
 oc get workload -n default -w
 ```
 
-## ClusterQueue with AdmissionChecks
+---
+
+## Step-by-Step Explanation
+
+### Step 1: Create ClusterQueue
+
+The ClusterQueue defines resource quotas and links to admission checks:
 
 ```yaml
 apiVersion: kueue.x-k8s.io/v1beta1
@@ -26,7 +88,7 @@ kind: ClusterQueue
 metadata:
   name: "cluster-queue"
 spec:
-  namespaceSelector: {}
+  namespaceSelector: {}  # Accept jobs from all namespaces
   resourceGroups:
   - coveredResources: ["cpu", "memory"]
     flavors:
@@ -37,46 +99,100 @@ spec:
       - name: "memory"
         nominalQuota: 256Gi
   admissionChecks:
-  - multikueue-demo
+  - multikueue   # Links to MultiKueue controller
 ```
 
-## AdmissionCheck for MultiKueue
+### Step 2: Create AdmissionCheck
+
+The AdmissionCheck tells Kueue to consult the MultiKueue controller before admitting jobs:
 
 ```yaml
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: AdmissionCheck
 metadata:
-  name: multikueue-demo
+  name: multikueue
 spec:
   controllerName: kueue.x-k8s.io/multikueue
   parameters:
     apiGroup: kueue.x-k8s.io
     kind: MultiKueueConfig
-    name: default
+    name: default  # Created by the addon
 ```
 
-## What This Scenario Demonstrates
+### Step 3: Create LocalQueue
 
-- Basic MultiKueue setup with RHACM
-- Job submission to hub cluster
-- Automatic dispatch to spoke clusters via Placement
+Users submit jobs to the LocalQueue:
+
+```yaml
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: user-queue
+  namespace: default
+spec:
+  clusterQueue: cluster-queue
+```
+
+### Step 4: Submit a Job
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: sample-job-
+  namespace: default
+  labels:
+    kueue.x-k8s.io/queue-name: user-queue
+spec:
+  template:
+    spec:
+      containers:
+      - name: worker
+        image: busybox
+        command: ["sleep", "30"]
+      restartPolicy: Never
+```
+
+---
 
 ## Verification
 
 ```bash
-# Check workload status
+# Check workload was admitted
 oc get workload -n default
 
 # Check which cluster the job was dispatched to
-oc get workload <workload-name> -o jsonpath='{.status.admission.clusterQueue}'
+oc get workload -n default -o jsonpath='{.items[0].status.admissionChecks}' | jq
 
 # Check job on spoke cluster
 KUBECONFIG=$SPOKE_KUBECONFIG oc get jobs -n default
 ```
 
+---
+
+## Expected Results
+
+| Resource | Status |
+|----------|--------|
+| Workload on hub | `Admitted=True` |
+| Job on hub | `Suspended=True` (controlled by Kueue) |
+| Job on spoke | `Running` or `Completed` |
+
+---
+
 ## Cleanup
 
 ```bash
-oc delete -f manifests/sample-job.yaml
+# Delete the sample job
+oc delete jobs -l kueue.x-k8s.io/queue-name=user-queue -n default
+
+# Delete Kueue resources
 oc delete -f manifests/
 ```
+
+---
+
+## Next Steps
+
+- [Scenario 2: Label-Based Selection](../scenario2-label-based/) - Route GPU jobs to GPU clusters
+- [Scenario 3: Dynamic Score-Based Selection](../scenario3-dynamic-score/) - Route to the cluster with most available resources

@@ -2,11 +2,118 @@
 
 > **Difficulty:** ⭐⭐⭐ Advanced | **Time:** ~20 minutes
 
-## TL;DR - Quick Start
+---
+
+## Why This Scenario?
+
+Scenario 2 routes GPU jobs to GPU clusters using static labels. But what if you have **multiple GPU clusters**?
+
+| Cluster | GPUs | Current Load | Available GPUs |
+|---------|------|--------------|----------------|
+| gpu-cluster-1 | 8 | 75% | 2 |
+| gpu-cluster-2 | 8 | 25% | 6 |
+| gpu-cluster-3 | 4 | 50% | 2 |
+
+Sending jobs to a random GPU cluster might result in:
+- Jobs queued on a busy cluster while other clusters sit idle
+- Uneven resource utilization across the fleet
+- Longer wait times for users
+
+### The Problem
+
+> "I have multiple GPU clusters. I want my job to go to the one with the **most available GPUs right now**."
+
+**Dynamic score-based Placement solves this** using RHACM's `AddOnPlacementScore` to rank clusters by real-time metrics.
+
+---
+
+## What You'll Learn
+
+In this scenario, you'll:
+
+1. **Create AddOnPlacementScores** that represent GPU availability per cluster
+2. **Create a Placement** that prioritizes clusters by score
+3. **Observe dynamic routing** as scores change
+4. **Simulate real-world behavior** with score updates
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  HUB CLUSTER                                                │
+│  ┌──────────────┐    ┌───────────────┐    ┌──────────────┐ │
+│  │ Dynamic-Queue│───▶│ Dynamic-CQ    │───▶│ Placement    │ │
+│  │              │    │               │    │ (by score)   │ │
+│  └──────────────┘    └───────────────┘    └──────┬───────┘ │
+└──────────────────────────────────────────────────┼─────────┘
+                                                   │
+               ┌───────── Score Ranking ───────────┤
+               │     gpuAvailable: highest wins    │
+               ▼                                   ▼
+       ┌──────────────┐                   ┌──────────────┐
+       │ gpu-cluster-1│                   │ gpu-cluster-2│
+       │ Score: 20    │                   │ Score: 80 ✅ │
+       │ (busy)       │                   │ (idle)       │
+       └──────────────┘                   └──────────────┘
+```
+
+---
+
+## How It Works
+
+### AddOnPlacementScore
+
+`AddOnPlacementScore` is an RHACM resource that provides scores for cluster selection:
+
+```yaml
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: AddOnPlacementScore
+metadata:
+  name: gpu-score
+  namespace: spoke-cluster1   # One per cluster namespace
+status:
+  scores:
+  - name: gpuAvailable
+    value: 80   # 0-100, higher = more available
+```
+
+**Key points:**
+- Scores live in each cluster's namespace on the hub
+- External controllers (like a GPU monitor) update these scores
+- Placement uses scores to rank clusters
+
+### Placement with Score Prioritizer
+
+```yaml
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: dynamic-gpu-placement
+spec:
+  numberOfClusters: 1   # Select only the top-scoring cluster
+  prioritizerPolicy:
+    mode: Exact
+    configurations:
+    - scoreCoordinate:
+        type: AddOn
+        addOn:
+          resourceName: gpu-score
+          scoreName: gpuAvailable
+      weight: 1
+```
+
+---
+
+## Prerequisites
+
+- Completed [Scenario 2](../scenario2-label-based/) or equivalent setup
+- Multiple managed clusters (or simulate with score changes)
+
+---
+
+## Quick Start
 
 ```bash
-# From this directory
-cd scenarios/scenario3-dynamic-score
+# From the repo root
+cd docs/scenarios/scenario3-dynamic-score
 
 # 1. Create sample AddonPlacementScores
 oc apply -f manifests/sample-scores.yaml
@@ -21,17 +128,16 @@ oc create -f manifests/sample-gpu-job.yaml
 oc get workload -n default -w
 ```
 
-## What This Scenario Demonstrates
+---
 
-- Dynamic cluster selection using AddonPlacementScore
-- Jobs routed to cluster with highest GPU availability score
-- Automatic rebalancing as scores change
+## Step-by-Step Explanation
 
-## AddonPlacementScore
+### Step 1: Create AddOnPlacementScores
 
-AddonPlacementScore allows external controllers to provide scores for clusters:
+Create scores for each cluster. In production, a GPU monitoring addon would update these:
 
 ```yaml
+# For spoke-cluster1 (busy, few GPUs available)
 apiVersion: cluster.open-cluster-management.io/v1alpha1
 kind: AddOnPlacementScore
 metadata:
@@ -40,10 +146,21 @@ metadata:
 status:
   scores:
   - name: gpuAvailable
-    value: 80  # Higher = more GPUs available
+    value: 20   # Low score = busy cluster
+---
+# For spoke-cluster2 (idle, many GPUs available)
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: AddOnPlacementScore
+metadata:
+  name: gpu-score
+  namespace: spoke-cluster2
+status:
+  scores:
+  - name: gpuAvailable
+    value: 80   # High score = idle cluster
 ```
 
-## Dynamic GPU Placement
+### Step 2: Create Dynamic Placement
 
 ```yaml
 apiVersion: cluster.open-cluster-management.io/v1beta1
@@ -52,7 +169,7 @@ metadata:
   name: dynamic-gpu-placement
   namespace: openshift-kueue-operator
 spec:
-  numberOfClusters: 1
+  numberOfClusters: 1   # Pick only the best one
   prioritizerPolicy:
     mode: Exact
     configurations:
@@ -64,19 +181,7 @@ spec:
       weight: 1
 ```
 
-## LocalQueue
-
-```yaml
-apiVersion: kueue.x-k8s.io/v1beta1
-kind: LocalQueue
-metadata:
-  namespace: "default"
-  name: "dynamic-gpu-queue"
-spec:
-  clusterQueue: "dynamic-gpu-queue"
-```
-
-## AdmissionCheck
+### Step 3: Create AdmissionCheck
 
 ```yaml
 apiVersion: kueue.x-k8s.io/v1beta1
@@ -91,33 +196,140 @@ spec:
     name: dynamic-gpu-placement
 ```
 
+### Step 4: Create ClusterQueue and LocalQueue
+
+```yaml
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: dynamic-gpu-queue
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: gpu-flavor
+      resources:
+      - name: "cpu"
+        nominalQuota: 100
+      - name: "memory"
+        nominalQuota: 256Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: 8
+  admissionChecks:
+  - dynamic-gpu-check
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: dynamic-gpu-queue
+  namespace: default
+spec:
+  clusterQueue: dynamic-gpu-queue
+```
+
+---
+
 ## Verification
 
 ```bash
 # Check AddonPlacementScores
 oc get addonplacementscore -A
 
-# Check PlacementDecision - should select highest scored cluster
-oc get placementdecision -n openshift-kueue-operator
+# Check PlacementDecision - should show highest-scored cluster
+oc get placementdecision -n openshift-kueue-operator -o yaml
 
-# Watch jobs being dispatched
-oc get workload -n default -w
+# Check where job was dispatched
+oc get workload -n default
+
+# Verify job is on the high-score cluster
+KUBECONFIG=$SPOKE2_KUBECONFIG oc get jobs -n default  # Should be here (score=80)
+KUBECONFIG=$SPOKE_KUBECONFIG oc get jobs -n default   # Should be empty (score=20)
 ```
 
-## Simulating Score Changes
+---
+
+## Simulating Dynamic Behavior
+
+Watch how jobs are routed as scores change:
 
 ```bash
-# Update score for spoke-cluster2 to be higher
-oc patch addonplacementscore gpu-score -n spoke-cluster2 \
-  --type=merge -p '{"status":{"scores":[{"name":"gpuAvailable","value":90}]}}'
+# Terminal 1: Watch PlacementDecisions
+watch oc get placementdecision -n openshift-kueue-operator
 
-# Submit new job - should go to spoke-cluster2 now
+# Terminal 2: Update scores to simulate cluster load changes
+# Make spoke-cluster1 the best choice now
+oc patch addonplacementscore gpu-score -n spoke-cluster1 \
+  --type=merge --subresource=status \
+  -p '{"status":{"scores":[{"name":"gpuAvailable","value":95}]}}'
+
+# Submit a new job - should go to spoke-cluster1 now
 oc create -f manifests/sample-gpu-job.yaml
 ```
+
+---
+
+## Expected Results
+
+| Initial State | After Score Update |
+|---------------|-------------------|
+| PlacementDecision: spoke-cluster2 | PlacementDecision: spoke-cluster1 |
+| Jobs routed to spoke-cluster2 | New jobs routed to spoke-cluster1 |
+
+---
+
+## Production Considerations
+
+In production, you would:
+
+1. **Deploy a GPU monitoring addon** that reports actual GPU availability
+2. **Update scores automatically** based on `nvidia-smi` or DCGM metrics
+3. **Consider multiple score dimensions** (GPU memory, GPU utilization, queue depth)
+4. **Set appropriate weights** for different prioritizers
+
+### Example: Multi-Dimension Scoring
+
+```yaml
+prioritizerPolicy:
+  configurations:
+  - scoreCoordinate:
+      type: AddOn
+      addOn:
+        resourceName: gpu-score
+        scoreName: gpuAvailable
+    weight: 2   # GPU availability is most important
+  - scoreCoordinate:
+      type: AddOn
+      addOn:
+        resourceName: gpu-score
+        scoreName: gpuMemoryAvailable
+    weight: 1   # Memory is secondary consideration
+```
+
+---
 
 ## Cleanup
 
 ```bash
-oc delete -f manifests/sample-gpu-job.yaml
+# Delete jobs
+oc delete jobs -l kueue.x-k8s.io/queue-name=dynamic-gpu-queue -n default
+
+# Delete Kueue resources
 oc delete -f manifests/
+
+# Delete AddonPlacementScores
+oc delete addonplacementscore gpu-score -n spoke-cluster1
+oc delete addonplacementscore gpu-score -n spoke-cluster2
 ```
+
+---
+
+## Summary
+
+| Scenario | Selection Method | Use Case |
+|----------|-----------------|----------|
+| Scenario 1 | Any cluster | "Just run my job somewhere" |
+| Scenario 2 | Label-based | "Run on a GPU cluster" |
+| **Scenario 3** | **Score-based** | **"Run on the GPU cluster with most available GPUs"** |
+
+This progression shows how RHACM + MultiKueue enables increasingly sophisticated workload placement strategies.
