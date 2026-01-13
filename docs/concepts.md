@@ -193,17 +193,31 @@ Data scientists **only need to know which LocalQueue to use**:
 
 ---
 
-## Use Case: Red Hat OpenShift AI (RHOAI) with MultiKueue
+## Red Hat OpenShift AI: The Foundation
+
+**Red Hat OpenShift AI** is an enterprise-ready platform for managing AI workloads at scale. It provides:
+
+| Component | Description |
+|-----------|-------------|
+| **Jupyter Notebooks** | Model development environment |
+| **Data Pipelines** | Orchestration frameworks |
+| **Model Serving** | KServe/vLLM for inference |
+| **Monitoring** | Prometheus-based observability |
+| **Kueue** | Kubernetes-native GPU scheduling |
+
+!!! info "Key Insight"
+    **OpenShift AI already includes Kueue** for single-cluster GPU scheduling. 
+    **RHACM + MultiKueue** extends this to multi-cluster environments.
 
 ### Entry Points for AI Workloads
 
-Data Scientists have multiple tools to interact with the GPU-as-a-Service platform:
+Data Scientists have multiple entry points to submit GPU workloads:
 
 | Entry Point | Description | GPU Required |
 |-------------|-------------|--------------|
-| **RHOAI** | Red Hat OpenShift AI - Jupyter notebooks, pipelines, model serving | Optional (for development) |
-| **MCP** | Model Context Protocol - Agentic AI workflows, orchestration | ❌ No |
-| **ETC** | Other tools - CLI, custom applications | Varies |
+| **OpenShift AI** | ML Platform with Jupyter, pipelines, Kueue | For training/inference |
+| **MCP** | Model Context Protocol - Agentic AI workflows | ❌ No (orchestration only) |
+| **CLI/API** | Direct job submission | For training/inference |
 
 !!! info "Important Distinction"
     **Agentic workloads and MCP servers do NOT need GPUs** to run. They orchestrate and coordinate work. 

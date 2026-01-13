@@ -92,7 +92,7 @@ export default function Slide6() {
         animate={{ opacity: 1 }}
         className="text-center text-white text-base font-semibold mb-3"
       >
-        Entry Points: RHOAI / MCP / ETC
+        Data Scientist Entry Points
       </motion.h3>
 
       {/* Main layout */}
@@ -111,8 +111,8 @@ export default function Slide6() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <div className="text-sm text-blue-300 font-semibold">RHOAI</div>
-              <div className="text-xs text-gray-400">OpenShift AI</div>
+              <div className="text-sm text-blue-300 font-semibold">OpenShift AI</div>
+              <div className="text-xs text-gray-400">ML Platform + Kueue</div>
             </motion.div>
           </motion.div>
 
