@@ -1,0 +1,75 @@
+site_name: GPUaaS with RHACM
+site_description: GPU-as-a-Service using MultiKueue and RHACM for Kubernetes-native Job Queueing at Scale
+site_url: https://rrbanda.github.io/GPUaaS-RHACM
+repo_url: https://github.com/rrbanda/GPUaaS-RHACM
+repo_name: rrbanda/GPUaaS-RHACM
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mermaid2
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Concepts: docs/concepts.md
+    - Prerequisites: docs/00-prerequisites.md
+    - Architecture: docs/01-architecture.md
+    - Installation: docs/02-installation.md
+  - Demo Scenarios:
+    - Overview: scenarios/index.md
+    - "1. Basic MultiKueue": scenarios/scenario1-basic/README.md
+    - "2. Label-Based Selection": scenarios/scenario2-label-based/README.md
+    - "3. Dynamic Score-Based": scenarios/scenario3-dynamic-score/README.md
+  - Troubleshooting: docs/99-troubleshooting.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rrbanda/GPUaaS-RHACM

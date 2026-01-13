@@ -1,8 +1,5 @@
----
-title: "Architecture"
-excerpt: "Technical deep dive into components"
-permalink: /architecture/
----
+# Architecture
+
 
 
 ## High-Level Overview

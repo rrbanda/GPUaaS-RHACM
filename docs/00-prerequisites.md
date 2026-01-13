@@ -1,8 +1,5 @@
----
-title: "Prerequisites"
-excerpt: "What you need before starting"
-permalink: /prerequisites/
----
+# Prerequisites
+
 
 
 ## Required Components

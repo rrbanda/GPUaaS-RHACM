@@ -1,8 +1,5 @@
----
-title: "Installation"
-excerpt: "Step-by-step setup guide"
-permalink: /installation/
----
+# Installation
+
 
 
 ## Overview

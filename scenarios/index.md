@@ -1,8 +1,3 @@
----
-title: "Demo Scenarios"
-excerpt: "Step-by-step demo scenarios for GPU-as-a-Service"
-permalink: /scenarios/
----
 
 # Demo Scenarios
 

@@ -1,8 +1,5 @@
----
-title: "Troubleshooting"
-excerpt: "Known issues and fixes"
-permalink: /troubleshooting/
----
+# Troubleshooting
+
 
 
 ## Known Issues and Workarounds
@@ -36,36 +33,6 @@ KUBECONFIG=$SPOKE_KUBECONFIG oc patch clusterqueue gpu-cluster-queue \
 
 > **Note:** The addon may overwrite this fix on its reconciliation loop. You may need to reapply after addon reconciliation.
 
----
-
-### Issue 2: Jobs Running on Hub Instead of Spoke
-
-**Symptom:**
-- Workload shows "Admitted" on hub
-- Pod created on hub (not spoke)
-- Pod stuck in "Pending" (hub has no GPUs)
-
-**Diagnosis:**
-```bash
-# Check if workload has admissionChecks in status
-oc get workload -n default -o jsonpath='{.items[0].status.admissionChecks}'
-
-# If empty/null, admission checks were bypassed
-```
-
-**Root Cause:**
-AdmissionChecks marked as complete before MultiKueue controller could dispatch the job.
-
-**Workaround:**
-1. Delete the stuck job
-2. Ensure ClusterQueue has admission checks:
-   ```bash
-   oc patch clusterqueue gpu-cluster-queue --type=merge \
-     -p='{"spec":{"admissionChecks":["multikueue-demo","multikueue-config-demo"]}}'
-   ```
-3. Resubmit the job
-
----
 
 ### Issue 3: MultiKueueCluster Shows CONNECTED=False
 
@@ -102,33 +69,6 @@ oc get secret -n spoke-cluster1 | grep multikueue
    oc delete pod -n open-cluster-management-addon -l app=kueue-addon-controller
    ```
 
----
-
-### Issue 4: Placement Shows "NoManagedClusterSetBindings"
-
-**Symptom:**
-```bash
-oc get placement default -n openshift-kueue-operator
-# SUCCEEDED   REASON
-# False       NoManagedClusterSetBindings
-```
-
-**Solution:**
-Create ManagedClusterSetBinding:
-
-```bash
-cat <<EOF | oc apply -f -
-apiVersion: cluster.open-cluster-management.io/v1beta2
-kind: ManagedClusterSetBinding
-metadata:
-  name: global
-  namespace: openshift-kueue-operator
-spec:
-  clusterSet: global
-EOF
-```
-
----
 
 ### Issue 5: Kueue Operator Installation Fails
 
@@ -160,42 +100,6 @@ Kueue Operator requires cluster-wide installation, not namespace-scoped.
 
 3. Recreate Subscription
 
----
-
-### Issue 6: Jobs Stuck in "Pending" on Spoke
-
-**Symptom:**
-- Job dispatched to spoke
-- Pod created but stuck in "Pending"
-- Scheduler error: "Insufficient nvidia.com/gpu"
-
-**Diagnosis:**
-```bash
-# Check pod events
-KUBECONFIG=$SPOKE_KUBECONFIG oc describe pod <pod-name> -n default | tail -10
-
-# Check node GPU capacity
-KUBECONFIG=$SPOKE_KUBECONFIG oc get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\\.com/gpu
-```
-
-**Solutions:**
-
-1. **Check if GPU nodes exist:**
-   ```bash
-   KUBECONFIG=$SPOKE_KUBECONFIG oc get nodes -l nvidia.com/gpu.present=true
-   ```
-
-2. **Check NFD and GPU Operator:**
-   ```bash
-   KUBECONFIG=$SPOKE_KUBECONFIG oc get csv -n nvidia-gpu-operator
-   ```
-
-3. **Check existing GPU usage:**
-   ```bash
-   KUBECONFIG=$SPOKE_KUBECONFIG oc get pods -A -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].resources.requests.nvidia\.com/gpu}{"\n"}{end}' | grep -v "^$"
-   ```
-
----
 
 ## Debugging Commands
 
@@ -250,42 +154,6 @@ oc logs deployment/kueue-addon-controller -n open-cluster-management-addon --tai
 oc get workload <workload-name> -n default -o yaml | grep -A 50 "status:"
 ```
 
----
-
-## Script: Fix All Spoke ClusterQueues
-
-Save as `scripts/fix-spoke-clusterqueues.sh`:
-
-```bash
-#!/bin/bash
-# Fix spoke ClusterQueues by removing admission checks
-
-SPOKES=("spoke-cluster1" "spoke-cluster2")
-KUBECONFIG_DIR="/tmp"
-
-for spoke in "${SPOKES[@]}"; do
-  echo "Fixing $spoke..."
-  
-  KUBECONFIG="${KUBECONFIG_DIR}/${spoke}-kubeconfig"
-  
-  if [ ! -f "$KUBECONFIG" ]; then
-    echo "  Kubeconfig not found: $KUBECONFIG"
-    continue
-  fi
-  
-  for cq in cluster-queue gpu-cluster-queue dynamic-gpu-queue; do
-    KUBECONFIG="$KUBECONFIG" oc patch clusterqueue "$cq" \
-      --type=json \
-      -p='[{"op": "remove", "path": "/spec/admissionChecks"}]' 2>/dev/null \
-      && echo "  Fixed: $cq" \
-      || echo "  Skipped: $cq (not found or already fixed)"
-  done
-done
-
-echo "Done!"
-```
-
----
 
 ## Getting Help
 

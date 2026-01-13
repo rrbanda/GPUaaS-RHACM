@@ -1,8 +1,5 @@
----
-title: "Scenario 2: Label-Based Selection"
-excerpt: "Target specific GPU types using cluster labels"
-permalink: /scenarios/label-based/
----
+# Scenario 2: Label-Based Selection
+
 
 
 > **Difficulty:** ⭐⭐ Intermediate | **Time:** ~15 minutes
@@ -29,129 +26,6 @@ oc create -f manifests/sample-gpu-job.yaml
 oc get workload -n default -w
 ```
 
----
-
-## Overview
-
-In this scenario, we use OCM Placement with **label selectors** to dispatch GPU workloads only to clusters with specific GPU types.
-
-**Use Case:** Target specific GPU hardware (e.g., NVIDIA L4, T4, A100) for ML/AI workloads.
-
-## Architecture
-
-```mermaid
-flowchart TB
-    subgraph hub["🖥️ Hub Cluster"]
-        job["GPU Job<br/>(gpu-queue)<br/>nvidia.com/gpu: 1"]
-        placement["Placement (gpu-placement)<br/>labelSelector:<br/>accelerator: nvidia-l4"]
-        job --> placement
-    end
-    
-    placement -->|"✅ SELECTED"| s1["🟢 Spoke 1<br/>GPU: L4<br/>Job runs here"]
-    placement -.->|"❌ SKIPPED"| s2["⚪ Spoke 2<br/>CPU Only"]
-    placement -.->|"❌ SKIPPED"| s3["🟡 Spoke 3<br/>GPU: T4"]
-    
-    style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
-    style s1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:3px,color:#fff
-    style s2 fill:#1a1a2e,stroke:#ef5350,stroke-width:1px,color:#888
-    style s3 fill:#1a1a2e,stroke:#ef5350,stroke-width:1px,color:#888
-```
-
-## Prerequisites
-
-- [Scenario 1](../scenario1-basic/) completed
-- Clusters labeled with GPU types:
-  - `spoke-cluster1`: `accelerator=nvidia-l4`
-  - `spoke-cluster2`: `cluster-type=cpu-only`
-
-## Step 1: Verify Cluster Labels
-
-```bash
-# Check cluster labels
-oc get managedclusters -L accelerator,cluster-type
-
-# Expected output:
-# NAME             ACCELERATOR   CLUSTER-TYPE
-# spoke-cluster1   nvidia-l4     gpu
-# spoke-cluster2                 cpu-only
-```
-
-If labels are missing, add them:
-
-```bash
-oc label managedcluster spoke-cluster1 accelerator=nvidia-l4 cluster-type=gpu --overwrite
-oc label managedcluster spoke-cluster2 cluster-type=cpu-only --overwrite
-```
-
-## Step 2: Create GPU Placement
-
-```bash
-cat <<EOF | oc apply -f -
-apiVersion: cluster.open-cluster-management.io/v1beta1
-kind: Placement
-metadata:
-  name: gpu-placement
-  namespace: openshift-kueue-operator
-spec:
-  clusterSets:
-  - global
-  tolerations:
-  - key: cluster.open-cluster-management.io/unreachable
-    operator: Exists
-  - key: cluster.open-cluster-management.io/unavailable
-    operator: Exists
-  predicates:
-    - requiredClusterSelector:
-        labelSelector:
-          matchLabels:
-            accelerator: nvidia-l4
-EOF
-```
-
-Verify Placement:
-
-```bash
-# Check Placement status
-oc get placement gpu-placement -n openshift-kueue-operator
-
-# Check which clusters were selected
-oc get placementdecision -n openshift-kueue-operator -l cluster.open-cluster-management.io/placement=gpu-placement
-```
-
-## Step 3: Create GPU Queue Resources
-
-```bash
-oc apply -f manifests/
-
-# Or from repo root:
-oc apply -f scenarios/scenario2-label-based/manifests/
-```
-
-Or manually:
-
-```yaml
-# GPU ClusterQueue
-apiVersion: kueue.x-k8s.io/v1beta1
-kind: ClusterQueue
-metadata:
-  name: "gpu-cluster-queue"
-spec:
-  namespaceSelector: {}
-  resourceGroups:
-  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
-    flavors:
-    - name: "default-flavor"
-      resources:
-      - name: "cpu"
-        nominalQuota: 32
-      - name: "memory"
-        nominalQuota: 128Gi
-      - name: "nvidia.com/gpu"
-        nominalQuota: 4
-  admissionChecks:
-  - multikueue-gpu
-  - gpu-placement-check
----
 # GPU LocalQueue
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
@@ -160,19 +34,6 @@ metadata:
   name: "gpu-queue"
 spec:
   clusterQueue: "gpu-cluster-queue"
----
-# AdmissionCheck for MultiKueue (GPU config)
-apiVersion: kueue.x-k8s.io/v1beta1
-kind: AdmissionCheck
-metadata:
-  name: multikueue-gpu
-spec:
-  controllerName: kueue.x-k8s.io/multikueue
-  parameters:
-    apiGroup: kueue.x-k8s.io
-    kind: MultiKueueConfig
-    name: gpu-placement
----
 # AdmissionCheck for GPU Placement
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: AdmissionCheck
