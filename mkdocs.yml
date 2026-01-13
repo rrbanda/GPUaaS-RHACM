@@ -10,8 +10,8 @@ theme:
   name: material
   palette:
     - scheme: slate
-      primary: indigo
-      accent: cyan
+      primary: red
+      accent: amber
   features:
     - navigation.instant
     - navigation.sections
@@ -19,6 +19,8 @@ theme:
     - navigation.top
     - search.suggest
     - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
 
 plugins:
   - search
@@ -36,14 +38,23 @@ markdown_extensions:
   - tables
   - attr_list
   - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
 
 extra_javascript:
   - https://unpkg.com/mermaid@10/dist/mermaid.min.js
 
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rrbanda/GPUaaS-RHACM
+
 nav:
   - Home: index.md
+  - "🎮 Interactive Demo": demo/index.html
   - Concepts: concepts.md
   - Prerequisites: 00-prerequisites.md
   - Architecture: 01-architecture.md

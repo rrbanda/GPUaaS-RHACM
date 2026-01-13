@@ -3,6 +3,7 @@
 **GPU-as-a-Service using MultiKueue and Red Hat Advanced Cluster Management**
 
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://rrbanda.github.io/GPUaaS-RHACM/)
+[![Interactive Demo](https://img.shields.io/badge/demo-Interactive-red)](https://rrbanda.github.io/GPUaaS-RHACM/demo/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 
 ---
@@ -33,6 +34,19 @@ This repository demonstrates how to build a **GPU-as-a-Service (GPUaaS)** platfo
 | **Hub** | RHACM + Kueue Manager | CPU | — |
 | **spoke-cluster1** | GPU Worker | NVIDIA L4 × 4 | `accelerator=nvidia-l4` |
 | **spoke-cluster2** | CPU Worker | CPU only | `cluster-type=cpu-only` |
+
+---
+
+## 🎮 Interactive Demo
+
+Experience the architecture and job flow visually:
+
+**[▶ Launch Interactive Demo](https://rrbanda.github.io/GPUaaS-RHACM/demo/)**
+
+Features:
+- 🏗️ **Progressive Architecture** - See how GPU-as-a-Service is built, step by step
+- 👥 **Persona Views** - Toggle between Hub Admin and Data Scientist perspectives  
+- ⚡ **Job Flow Simulator** - Click to simulate jobs routing to worker clusters
 
 ---
 

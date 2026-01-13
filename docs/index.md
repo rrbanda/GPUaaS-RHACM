@@ -2,6 +2,18 @@
 
 **GPU-as-a-Service using MultiKueue and RHACM for Kubernetes-native Job Queueing at Scale**
 
+<div class="grid cards" markdown>
+
+- :material-play-circle:{ .lg .middle } **Interactive Demo**
+
+    ---
+
+    Experience the architecture and job flow visually with our rich interactive demo
+
+    [:octicons-arrow-right-24: Launch Demo](demo/index.html){ .md-button .md-button--primary }
+
+</div>
+
 ---
 
 ## Overview
