@@ -138,8 +138,8 @@ export default function Slide7() {
             animate={{ opacity: 1, x: 0 }}
           >
             <PersonaIcon type="scientist" />
-            <div className="mt-2 text-xs text-gray-500 bg-gray-800/50 px-2 py-1 rounded text-center">
-              RHOAI / MCP / ETC
+            <div className="mt-1 text-xs text-gray-500 text-center">
+              Submits<br/>Jobs
             </div>
           </motion.div>
         </div>

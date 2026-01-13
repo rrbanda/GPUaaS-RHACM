@@ -107,8 +107,8 @@ export default function Slide8() {
             className="flex flex-col items-center"
           >
             <PersonaIcon type="scientist" />
-            <div className="mt-2 text-xs text-gray-500 bg-gray-800/50 px-2 py-1 rounded">
-              RHOAI / MCP / ETC
+            <div className="mt-1 text-xs text-gray-500 text-center">
+              Submits<br/>Jobs
             </div>
           </motion.div>
           
