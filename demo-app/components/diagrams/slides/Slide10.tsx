@@ -1,303 +1,254 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { theme } from './shared/theme';
 
-// Persona card
-const PersonaCard = ({
-  icon,
-  title,
-  description,
-  responsibilities,
-  tools,
-  color,
-  delay,
-}: {
-  icon: string;
-  title: string;
-  description: string;
-  responsibilities: string[];
-  tools: string[];
-  color: string;
-  delay: number;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay }}
-    className="flex-1 p-6 rounded-2xl relative overflow-hidden group"
-    style={{
-      background: theme.backgroundCard,
-      border: `1px solid ${theme.glassBorder}`,
-    }}
-    whileHover={{ borderColor: color }}
-  >
-    {/* Background accent */}
-    <motion.div
-      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-      style={{
-        background: `linear-gradient(180deg, ${color}15 0%, transparent 50%)`,
-      }}
-    />
-    
-    <div className="relative z-10">
-      {/* Icon */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: delay + 0.2, type: 'spring' }}
-        className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 mx-auto"
-        style={{
-          background: `linear-gradient(135deg, ${color}20 0%, ${color}10 100%)`,
-          border: `2px solid ${color}40`,
-          boxShadow: `0 8px 30px ${color}20`,
-        }}
-      >
-        <span className="text-4xl">{icon}</span>
-      </motion.div>
-      
-      {/* Title */}
-      <h3 className="text-xl font-bold text-center mb-2" style={{ color }}>
-        {title}
-      </h3>
-      
-      {/* Description */}
-      <p className="text-sm text-center mb-4" style={{ color: theme.textMuted }}>
-        {description}
-      </p>
-      
-      {/* Divider */}
-      <div 
-        className="h-px w-12 mx-auto mb-4"
-        style={{ background: `${color}40` }}
-      />
-      
-      {/* Responsibilities */}
-      <div className="mb-4">
-        <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textDim }}>
-          Responsibilities
-        </h4>
-        <ul className="space-y-1">
-          {responsibilities.map((item, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: delay + 0.3 + i * 0.05 }}
-              className="flex items-center gap-2 text-xs"
-              style={{ color: theme.textSecondary }}
-            >
-              <span style={{ color }}>▸</span>
-              {item}
-            </motion.li>
-          ))}
-        </ul>
-      </div>
-      
-      {/* Tools */}
-      <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textDim }}>
-          Tools & Interfaces
-        </h4>
-        <div className="flex flex-wrap gap-1">
-          {tools.map((tool, i) => (
-            <motion.span
-              key={i}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: delay + 0.5 + i * 0.05 }}
-              className="text-xs px-2 py-1 rounded"
-              style={{ background: `${color}15`, color }}
-            >
-              {tool}
-            </motion.span>
-          ))}
-        </div>
-      </div>
-    </div>
-  </motion.div>
-);
+const Slide10: React.FC = () => {
+  const personas = [
+    {
+      icon: '🏗️',
+      title: 'Platform Engineer',
+      subtitle: 'RHACM Admin',
+      description: 'Manages clusters & policies',
+      color: theme.redHatRed,
+      responsibilities: ['Configure cluster fleet', 'Define Placements', 'Set quotas', 'Deploy Kueue'],
+      tools: ['RHACM', 'oc CLI', 'Policies'],
+      knows: ['Cluster topology', 'GPU types', 'Quotas'],
+    },
+    {
+      icon: '🔬',
+      title: 'Data Scientist',
+      subtitle: 'Kueue User',
+      description: 'Trains & deploys ML models',
+      color: theme.gpuGreen,
+      responsibilities: ['Submit jobs', 'Run notebooks', 'Fine-tune models', 'Deploy via KServe'],
+      tools: ['OpenShift AI', 'Notebooks', 'Pipelines'],
+      knows: ['Job specs', 'Queue names', 'Model params'],
+    },
+    {
+      icon: '🤖',
+      title: 'AI Engineer',
+      subtitle: 'Agent Builder',
+      description: 'Builds intelligent agents',
+      color: theme.purpleLight,
+      responsibilities: ['Design agents', 'Configure LlamaStack', 'Define MCP tools', 'Build RAG'],
+      tools: ['GenAI Studio', 'LlamaStack', 'MCP'],
+      knows: ['Agent logic', 'Tool schemas', 'APIs'],
+    },
+  ];
 
-// Knowledge boundary visualization
-const KnowledgeBoundary = ({ delay }: { delay: number }) => (
-  <motion.div
-    initial={{ opacity: 0, scaleX: 0 }}
-    animate={{ opacity: 1, scaleX: 1 }}
-    transition={{ delay, duration: 0.5 }}
-    className="mt-8 p-4 rounded-xl relative"
-    style={{
-      background: theme.glassBg,
-      border: `1px solid ${theme.glassBorder}`,
-    }}
-  >
-    <h4 className="text-sm font-semibold mb-3 text-center" style={{ color: theme.white }}>
-      Knowledge Separation by Design
-    </h4>
-    
-    <div className="flex items-center justify-center gap-4">
-      {/* Platform Engineer knows */}
-      <div className="flex-1 p-3 rounded-lg" style={{ background: `${theme.redHatRed}10` }}>
-        <div className="text-xs font-semibold mb-2 text-center" style={{ color: theme.redHatRedLight }}>
-          Platform Engineer Knows
-        </div>
-        <div className="flex flex-wrap gap-1 justify-center">
-          {['Cluster topology', 'GPU types', 'Quotas', 'Policies', 'Placement rules'].map((item, i) => (
-            <span key={i} className="text-xs px-2 py-0.5 rounded" style={{ background: `${theme.redHatRed}15`, color: theme.textMuted }}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-      
-      {/* Divider */}
-      <div className="flex flex-col items-center gap-1">
-        <div className="w-px h-8" style={{ background: theme.glassBorder }} />
-        <span className="text-xl">🔐</span>
-        <div className="w-px h-8" style={{ background: theme.glassBorder }} />
-      </div>
-      
-      {/* Data Scientist knows */}
-      <div className="flex-1 p-3 rounded-lg" style={{ background: `${theme.gpuGreen}10` }}>
-        <div className="text-xs font-semibold mb-2 text-center" style={{ color: theme.gpuGreen }}>
-          Data Scientist Knows
-        </div>
-        <div className="flex flex-wrap gap-1 justify-center">
-          {['Job requirements', 'Queue names', 'Model specs', 'Training params'].map((item, i) => (
-            <span key={i} className="text-xs px-2 py-0.5 rounded" style={{ background: `${theme.gpuGreen}15`, color: theme.textMuted }}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-      
-      {/* AI Engineer knows */}
-      <div className="flex-1 p-3 rounded-lg" style={{ background: `${theme.purpleLight}10` }}>
-        <div className="text-xs font-semibold mb-2 text-center" style={{ color: theme.purpleLight }}>
-          AI Engineer Knows
-        </div>
-        <div className="flex flex-wrap gap-1 justify-center">
-          {['Agent logic', 'LlamaStack APIs', 'Tool schemas', 'MCP servers'].map((item, i) => (
-            <span key={i} className="text-xs px-2 py-0.5 rounded" style={{ background: `${theme.purpleLight}15`, color: theme.textMuted }}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  </motion.div>
-);
-
-export default function Slide10() {
   return (
-    <div 
-      className="w-full h-full flex flex-col p-8 relative overflow-hidden"
-      style={{ background: theme.background }}
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: `linear-gradient(135deg, ${theme.background} 0%, #0f1419 50%, #0a0d10 100%)`,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '40px 60px',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
     >
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none">
+      {/* Background Effects */}
+      {personas.map((p, i) => (
         <motion.div
-          className="absolute w-[400px] h-[400px] rounded-full"
+          key={i}
+          animate={{ opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 4, repeat: Infinity, delay: i * 1.5 }}
           style={{
-            background: `radial-gradient(circle, ${theme.redHatRedGlow} 0%, transparent 60%)`,
-            top: '-10%',
-            left: '10%',
-          }}
-          animate={{ opacity: [0.15, 0.3, 0.15] }}
-          transition={{ duration: 6, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute w-[400px] h-[400px] rounded-full"
-          style={{
-            background: `radial-gradient(circle, ${theme.gpuGreenGlow} 0%, transparent 60%)`,
+            position: 'absolute',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${p.color}30 0%, transparent 70%)`,
+            left: `${20 + i * 30}%`,
             top: '20%',
-            left: '45%',
+            filter: 'blur(60px)',
           }}
-          animate={{ opacity: [0.15, 0.3, 0.15] }}
-          transition={{ duration: 6, repeat: Infinity, delay: 2 }}
         />
-        <motion.div
-          className="absolute w-[400px] h-[400px] rounded-full"
-          style={{
-            background: `radial-gradient(circle, ${theme.purpleGlow} 0%, transparent 60%)`,
-            top: '-5%',
-            right: '10%',
-          }}
-          animate={{ opacity: [0.15, 0.3, 0.15] }}
-          transition={{ duration: 6, repeat: Infinity, delay: 4 }}
-        />
-      </div>
+      ))}
 
-      {/* Title */}
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-6 relative z-10"
+        style={{ textAlign: 'center', marginBottom: '40px', position: 'relative', zIndex: 1 }}
       >
-        <h2 className="text-4xl font-bold mb-2">
-          <span style={{ color: theme.white }}>Three Personas, </span>
-          <span 
-            className="bg-clip-text text-transparent"
-            style={{ backgroundImage: theme.gradientRedGold }}
+        <h1 style={{ fontSize: '44px', fontWeight: 700, margin: 0 }}>
+          <span style={{ color: 'white' }}>Three Personas, </span>
+          <span
+            style={{
+              background: `linear-gradient(135deg, ${theme.redHatRed} 0%, ${theme.amber} 100%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             One Platform
           </span>
-        </h2>
-        <p style={{ color: theme.textMuted }} className="text-lg">
+        </h1>
+        <p style={{ fontSize: '18px', color: theme.textSecondary, margin: '12px 0 0 0' }}>
           Clear separation of concerns for multi-cluster GPU management
         </p>
       </motion.div>
 
-      {/* Persona cards */}
-      <div className="flex gap-6 flex-1 relative z-10">
-        <PersonaCard
-          icon="🏗️"
-          title="Platform Engineer"
-          description="Manages infrastructure, clusters, and platform-wide policies"
-          responsibilities={[
-            'Configure cluster fleet & GPU pools',
-            'Define Placements & admission checks',
-            'Set up quotas and fair-share policies',
-            'Deploy Kueue Add-on via RHACM',
-            'Monitor fleet-wide GPU utilization',
-          ]}
-          tools={['RHACM Console', 'oc CLI', 'Policies', 'Placement API']}
-          color={theme.redHatRed}
-          delay={0.3}
-        />
-        <PersonaCard
-          icon="🔬"
-          title="Data Scientist"
-          description="Develops, trains, and deploys ML models at scale"
-          responsibilities={[
-            'Submit training jobs to LocalQueue',
-            'Run Jupyter notebooks',
-            'Fine-tune models with InstructLab',
-            'Deploy models via KServe/vLLM',
-            'Monitor job status & results',
-          ]}
-          tools={['OpenShift AI Dashboard', 'Notebooks', 'Pipelines', 'Model Registry']}
-          color={theme.gpuGreen}
-          delay={0.5}
-        />
-        <PersonaCard
-          icon="🤖"
-          title="AI Engineer"
-          description="Builds intelligent agents and AI-powered applications"
-          responsibilities={[
-            'Design agentic workflows',
-            'Configure LlamaStack agents',
-            'Define MCP tool integrations',
-            'Build RAG pipelines',
-            'Test & evaluate agent behavior',
-          ]}
-          tools={['GenAI Studio', 'LlamaStack APIs', 'AI Hub', 'MCP Servers']}
-          color={theme.purpleLight}
-          delay={0.7}
-        />
+      {/* Persona Cards - Horizontal Layout */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '24px',
+          justifyContent: 'center',
+          width: '100%',
+          maxWidth: '1100px',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        {personas.map((persona, index) => (
+          <motion.div
+            key={persona.title}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + index * 0.15 }}
+            style={{
+              width: '320px',
+              minHeight: '300px',
+              background: `linear-gradient(135deg, ${persona.color}08 0%, ${theme.backgroundCard} 100%)`,
+              border: `1px solid ${persona.color}30`,
+              borderRadius: '20px',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+              <div
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '14px',
+                  background: `${persona.color}20`,
+                  border: `2px solid ${persona.color}40`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '26px',
+                }}
+              >
+                {persona.icon}
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: persona.color, margin: 0 }}>
+                  {persona.title}
+                </h3>
+                <p style={{ fontSize: '12px', color: theme.textMuted, margin: '2px 0 0 0' }}>
+                  {persona.subtitle}
+                </p>
+              </div>
+            </div>
+
+            {/* Description */}
+            <p style={{ fontSize: '13px', color: theme.textSecondary, margin: '0 0 14px 0' }}>
+              {persona.description}
+            </p>
+
+            {/* Responsibilities - Compact List */}
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: theme.textDim, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Responsibilities
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {persona.responsibilities.map((item, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: persona.color, fontSize: '10px' }}>▸</span>
+                    <span style={{ fontSize: '12px', color: theme.textSecondary }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tools - Compact Tags */}
+            <div style={{ marginTop: 'auto' }}>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: theme.textDim, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Tools
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {persona.tools.map((tool, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      fontSize: '11px',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      background: `${persona.color}15`,
+                      color: persona.color,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {tool}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Knowledge boundary */}
-      <KnowledgeBoundary delay={1.0} />
+      {/* Knowledge Separation Footer */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+        style={{
+          marginTop: '32px',
+          background: 'rgba(255, 255, 255, 0.02)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderRadius: '16px',
+          padding: '20px 32px',
+          width: '100%',
+          maxWidth: '1100px',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>
+            🔐 Knowledge Separation by Design
+          </span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '24px' }}>
+          {personas.map((persona, index) => (
+            <div key={index} style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: persona.color, marginBottom: '8px' }}>
+                {persona.title} Knows
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
+                {persona.knows.map((item, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      fontSize: '10px',
+                      padding: '3px 8px',
+                      borderRadius: '4px',
+                      background: `${persona.color}10`,
+                      color: theme.textMuted,
+                    }}
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
-}
+};
+
+export default Slide10;
