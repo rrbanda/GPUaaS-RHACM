@@ -209,15 +209,36 @@ Data scientists **only need to know which LocalQueue to use**:
     **OpenShift AI already includes Kueue** for single-cluster GPU scheduling. 
     **RHACM + MultiKueue** extends this to multi-cluster environments.
 
-### Entry Points for AI Workloads
+### Personas and Entry Points
 
-Data Scientists have multiple entry points to submit GPU workloads:
+| Persona | What They Do | Entry Point | GPU Needs |
+|---------|--------------|-------------|-----------|
+| **Data Scientist** | Train models, experiments, feature engineering | OpenShift AI (Jupyter) | ✅ Yes (training) |
+| **ML Engineer** | Deploy models, MLOps pipelines, serving | OpenShift AI (KServe/vLLM) | ✅ Yes (inference) |
+| **AI Engineer** | Build AI agents and applications | MCP Servers | Indirectly (via inference APIs) |
+| **Platform Admin** | Manage clusters, quotas, placements | RHACM Console | ❌ No |
 
-| Entry Point | Description | GPU Required |
-|-------------|-------------|--------------|
-| **OpenShift AI** | ML Platform with Jupyter, pipelines, Kueue | For training/inference |
-| **MCP** | Model Context Protocol - Agentic AI workflows | ❌ No (orchestration only) |
-| **CLI/API** | Direct job submission | For training/inference |
+### AI Agents in the Picture
+
+AI agents (built with Claude SDK, Google ADK, LlamaStack, LangGraph, etc.) interact with OpenShift AI via **MCP Servers**:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  AI AGENTS (any framework)                                              │
+│  Claude Agent │ Google ADK │ LlamaStack │ LangGraph │ ...              │
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │ MCP Protocol
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  MCP SERVERS (deployed on OpenShift AI)                                 │
+│  └─ Expose tools: run_inference(), submit_training_job(), etc.         │
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  OPENSHIFT AI + KUEUE + MULTIKUEUE → GPU CLUSTERS                      │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 !!! info "Important Distinction"
     **Agentic workloads and MCP servers do NOT need GPUs** to run. They orchestrate and coordinate work. 

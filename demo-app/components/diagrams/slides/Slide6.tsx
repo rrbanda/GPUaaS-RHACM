@@ -28,7 +28,7 @@ const KueuePinwheel = ({ size = 20 }: { size?: number }) => (
   </motion.svg>
 );
 
-const PersonaIcon = ({ type }: { type: 'admin' | 'scientist' }) => (
+const PersonaIcon = ({ type }: { type: 'admin' | 'scientist' | 'ai-engineer' }) => (
   <div className="flex flex-col items-center">
     <svg width="40" height="40" viewBox="0 0 36 36" fill="none">
       <circle cx="18" cy="10" r="6" fill="#FEEBC8" stroke="#92400E" strokeWidth="0.8"/>
@@ -38,6 +38,11 @@ const PersonaIcon = ({ type }: { type: 'admin' | 'scientist' }) => (
           <rect x="19" y="8" width="3" height="2.5" rx="0.5" stroke="#1F2937" strokeWidth="0.6" fill="none"/>
           <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill={theme.redHatRed}/>
         </>
+      ) : type === 'ai-engineer' ? (
+        <>
+          <path d="M12 8 Q18 4 24 8" stroke="#4A3728" strokeWidth="1.5" fill="none"/>
+          <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill="#A855F7"/>
+        </>
       ) : (
         <>
           <path d="M12 8 Q18 4 24 8" stroke="#4A3728" strokeWidth="1.5" fill="none"/>
@@ -46,7 +51,7 @@ const PersonaIcon = ({ type }: { type: 'admin' | 'scientist' }) => (
       )}
     </svg>
     <span className="text-[10px] text-gray-400">
-      {type === 'admin' ? 'Hub Admin' : 'Data Scientist'}
+      {type === 'admin' ? 'Hub Admin' : type === 'ai-engineer' ? 'AI Engineer' : 'Data Scientist'}
     </span>
   </div>
 );
@@ -92,13 +97,14 @@ export default function Slide6() {
         animate={{ opacity: 1 }}
         className="text-center text-white text-base font-semibold mb-3"
       >
-        Data Scientist Entry Points
+        Multiple Entry Points to GPU-as-a-Service
       </motion.h3>
 
       {/* Main layout */}
       <div className="flex-1 flex">
-        {/* Left: Data Scientists with RHOAI */}
-        <div className="w-32 flex flex-col items-center justify-center gap-4">
+        {/* Left: Two personas - Data Scientist and AI Engineer */}
+        <div className="w-36 flex flex-col items-center justify-center gap-3">
+          {/* Data Scientist with OpenShift AI */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -106,37 +112,38 @@ export default function Slide6() {
           >
             <PersonaIcon type="scientist" />
             <motion.div 
-              className="mt-2 px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-900/30"
+              className="mt-1.5 px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-900/30"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <div className="text-sm text-blue-300 font-semibold">OpenShift AI</div>
-              <div className="text-xs text-gray-400">ML Platform + Kueue</div>
+              <div className="text-xs text-blue-300 font-semibold">OpenShift AI</div>
+              <div className="text-[10px] text-gray-400">Jupyter, Pipelines</div>
             </motion.div>
           </motion.div>
 
+          {/* AI Engineer with MCP */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             className="flex flex-col items-center"
           >
-            <PersonaIcon type="scientist" />
+            <PersonaIcon type="ai-engineer" />
             <motion.div 
-              className="mt-2 px-3 py-1.5 rounded-lg border border-purple-500 bg-purple-900/30"
+              className="mt-1.5 px-3 py-1.5 rounded-lg border border-purple-500 bg-purple-900/30"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <div className="text-sm text-purple-300 font-semibold">MCP</div>
-              <div className="text-xs text-gray-400">Agentic AI</div>
+              <div className="text-xs text-purple-300 font-semibold">MCP Servers</div>
+              <div className="text-[10px] text-gray-400">AI Agents → GPUs</div>
             </motion.div>
           </motion.div>
 
           {/* Arrows */}
           <motion.svg 
-            width="80" height="50" viewBox="0 0 80 50" className="absolute left-28 top-1/2 -translate-y-1/2"
+            width="80" height="60" viewBox="0 0 80 60" className="absolute left-32 top-1/2 -translate-y-1/2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -146,9 +153,9 @@ export default function Slide6() {
                 <path d="M0,0 L8,4 L0,8 Z" fill="#6B7280"/>
               </marker>
             </defs>
-            <path d="M0 12 L65 12" stroke="#3B82F6" strokeWidth="2.5" markerEnd="url(#arrow6)"/>
-            <path d="M0 38 L65 38" stroke="#8B5CF6" strokeWidth="2.5" markerEnd="url(#arrow6)"/>
-            <text x="32" y="28" fill="#6B7280" fontSize="9" textAnchor="middle">Jobs</text>
+            <path d="M0 15 L60 15" stroke="#3B82F6" strokeWidth="2" markerEnd="url(#arrow6)"/>
+            <path d="M0 45 L60 45" stroke="#A855F7" strokeWidth="2" markerEnd="url(#arrow6)"/>
+            <text x="30" y="33" fill="#6B7280" fontSize="8" textAnchor="middle">Jobs</text>
           </motion.svg>
         </div>
 
