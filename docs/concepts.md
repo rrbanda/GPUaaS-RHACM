@@ -147,17 +147,26 @@ spec:
 ```
 
 
+## Personas
+
+| Persona | Role | Pain Points | How MultiKueue Helps |
+|---------|------|-------------|---------------------|
+| **Data Scientist** | Submits AI/ML training jobs | "Which cluster is best?", "I need more GPU but don't know where to get it" | Submit to one queue, automatically routed to best cluster |
+| **Hub Admin** | Manages cluster fleet | "Why is no one using these GPUs?", "How do I configure all these Kueues?" | Centralized management, automatic configuration via add-on |
+
+---
+
 ## Use Case: Red Hat OpenShift AI (RHOAI) with MultiKueue
 
 ### The Challenge
 
-Data scientists using RHOAI face common problems:
+**Data Scientists** using RHOAI face common problems:
 
 > "I need more GPU but I'm not sure where I can get it."
 
 > "Which cluster is best for my training job?"
 
-Hub administrators struggle too:
+**Hub Administrators** struggle too:
 
 > "Why is no one using these GPUs?"
 
@@ -200,6 +209,58 @@ flowchart LR
 - **Optimal GPU utilization** - jobs go where GPUs are available
 - **Simplified operations** - RHACM addon handles configuration
 - **Scale easily** - add clusters to the ManagedClusterSet
+
+---
+
+## Multi-Team Scenario: Blue Team & Red Team
+
+Organizations can set up **separate placements for different teams** with their own queues and cluster targeting:
+
+```mermaid
+flowchart TB
+    subgraph hub["RHACM Hub Cluster + Kueue Manager"]
+        bp["BluePlacement"] --> blq["BlueLocalQueue"]
+        rp["RedPlacement"] --> rlq["RedLocalQueue"]
+        blq --> bcq["BlueClusterQueue (MK)"]
+        rlq --> rcq["RedClusterQueue (MK)"]
+        
+        acc["RHACM Admission Check Controller"]
+        kac["Kueue Admission Check Controller"]
+    end
+    
+    subgraph clusters["Managed Clusters"]
+        c1["Cluster 1<br/>Cheap CPUs"]
+        c2["Cluster 2<br/>Workhorse GPUs"]
+        c3["Cluster 3<br/>Mixed"]
+        c4["Cluster 4<br/>Gold Class"]
+    end
+    
+    bcq --> c1
+    bcq --> c2
+    rcq --> c3
+    rcq --> c4
+    
+    ds1["👤 Blue Team<br/>Data Scientist"] --> blq
+    ds2["👤 Red Team<br/>Data Scientist"] --> rlq
+    
+    style hub fill:#1a1a2e,stroke:#4fc3f7,color:#fff
+    style bp fill:#1565c0,color:#fff
+    style blq fill:#1565c0,color:#fff
+    style bcq fill:#1565c0,color:#fff
+    style rp fill:#c62828,color:#fff
+    style rlq fill:#c62828,color:#fff
+    style rcq fill:#c62828,color:#fff
+```
+
+### Example Placements
+
+| Placement | Team | Target Clusters | Use Case |
+|-----------|------|-----------------|----------|
+| **GPUPlacement** | ML Engineers | Clusters with `accelerator=nvidia-*` | Training jobs |
+| **CPUPlacement** | Data Processing | Clusters with `cluster-type=cpu-only` | ETL, preprocessing |
+| **GoldClassPlacement** | Priority Users | Premium clusters with best GPUs | Critical workloads |
+
+Each team submits to their own LocalQueue, and Placement routes to the appropriate clusters based on labels and policies.
 
 
 ## The Value of RHACM + MultiKueue
