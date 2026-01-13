@@ -14,8 +14,8 @@ theme:
       accent: cyan
   features:
     - navigation.instant
-    - navigation.tabs
     - navigation.sections
+    - navigation.expand
     - navigation.top
     - search.suggest
     - content.code.copy
@@ -33,14 +33,13 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting Started:
-    - Concepts: concepts.md
-    - Prerequisites: 00-prerequisites.md
-    - Architecture: 01-architecture.md
-    - Installation: 02-installation.md
+  - Concepts: concepts.md
+  - Prerequisites: 00-prerequisites.md
+  - Architecture: 01-architecture.md
+  - Installation: 02-installation.md
   - Demo Scenarios:
     - Overview: scenarios/index.md
-    - Basic MultiKueue: scenarios/scenario1-basic/README.md
-    - Label-Based: scenarios/scenario2-label-based/README.md
-    - Dynamic Score: scenarios/scenario3-dynamic-score/README.md
+    - "Scenario 1: Basic": scenarios/scenario1-basic/README.md
+    - "Scenario 2: Label-Based": scenarios/scenario2-label-based/README.md
+    - "Scenario 3: Dynamic Score": scenarios/scenario3-dynamic-score/README.md
   - Troubleshooting: 99-troubleshooting.md
