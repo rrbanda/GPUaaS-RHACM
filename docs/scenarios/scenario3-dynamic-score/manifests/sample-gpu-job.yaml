@@ -1,11 +1,12 @@
 # Sample GPU Job for Scenario 3 (Dynamic Score-Based)
+# Submits to user-queue which routes to the GPU cluster with most available GPUs
 apiVersion: batch/v1
 kind: Job
 metadata:
   generateName: demo3-gpu-job-
   namespace: default
   labels:
-    kueue.x-k8s.io/queue-name: "dynamic-gpu-queue"
+    kueue.x-k8s.io/queue-name: "user-queue"  # Must match addon's localQueue.name
 spec:
   parallelism: 1
   completions: 1

@@ -36,7 +36,7 @@ In this scenario, you'll:
 ┌─────────────────────────────────────────────────────────────┐
 │  HUB CLUSTER                                                │
 │  ┌──────────────┐    ┌───────────────┐    ┌──────────────┐ │
-│  │ GPU-Queue    │───▶│ GPU-ClusterQ  │───▶│ Placement    │ │
+│  │ user-queue   │───▶│ cluster-queue │───▶│ Placement    │ │
 │  │              │    │               │    │ gpu-placement│ │
 │  └──────────────┘    └───────────────┘    └──────┬───────┘ │
 └──────────────────────────────────────────────────┼─────────┘
@@ -47,8 +47,11 @@ In this scenario, you'll:
            ┌──────────────┐               ┌──────────────┐
            │ spoke-cluster1│              │ spoke-cluster2│
            │ ✅ nvidia-l4  │              │ ❌ CPU only   │
+           │ (has queue)   │              │               │
            └──────────────┘               └──────────────┘
 ```
+
+> **Note:** The queue names (`cluster-queue`, `user-queue`) must match what's mirrored to spoke clusters by the kueue-addon.
 
 ---
 
@@ -57,6 +60,14 @@ In this scenario, you'll:
 - Completed [Scenario 1](../scenario1-basic/) or equivalent setup
 - At least one GPU cluster and one CPU-only cluster
 - Clusters labeled appropriately
+
+!!! warning "Important: Queue Naming"
+    The ClusterQueue and LocalQueue names on the hub **must match** what the kueue-addon syncs to spoke clusters.
+    By default, the addon syncs `cluster-queue` and `user-queue`. If you use different names, the job will fail on spokes with:
+    ```
+    LocalQueue gpu-queue doesn't exist
+    ```
+    To use custom queue names, update `kueue-addon-values.yaml` and re-deploy the addon.
 
 ---
 
@@ -140,41 +151,48 @@ spec:
 
 **Note:** The `controllerName` is `open-cluster-management.io/placement`, not the MultiKueue controller!
 
-### Step 4: Create GPU ClusterQueue
+### Step 4: Create ClusterQueue (Hub)
+
+The ClusterQueue name **must match** what the addon syncs to spokes:
 
 ```yaml
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
-  name: gpu-cluster-queue
+  name: cluster-queue  # Must match addon's clusterQueue.name!
 spec:
   namespaceSelector: {}
   resourceGroups:
   - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
     flavors:
-    - name: gpu-flavor
+    - name: default-flavor
       resources:
       - name: "cpu"
-        nominalQuota: 100
+        nominalQuota: 32
       - name: "memory"
-        nominalQuota: 256Gi
+        nominalQuota: 128Gi
       - name: "nvidia.com/gpu"
-        nominalQuota: 8
+        nominalQuota: 4
   admissionChecks:
-  - gpu-placement-check   # Uses the Placement-based check
+  - multikueue-gpu        # MultiKueue controller
+  - gpu-placement-check   # OCM Placement controller
 ```
 
-### Step 5: Create GPU LocalQueue
+### Step 5: Create LocalQueue (Hub)
 
 ```yaml
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
-  name: gpu-queue
+  name: user-queue  # Must match addon's localQueue.name!
   namespace: default
 spec:
-  clusterQueue: gpu-cluster-queue
+  clusterQueue: cluster-queue
 ```
+
+!!! info "Why these names?"
+    The kueue-addon mirrors `cluster-queue` and `user-queue` to spoke clusters.
+    Using different names on the hub will cause jobs to fail on spokes.
 
 ### Step 6: Submit a GPU Job
 
@@ -185,8 +203,9 @@ metadata:
   generateName: gpu-training-
   namespace: default
   labels:
-    kueue.x-k8s.io/queue-name: gpu-queue
+    kueue.x-k8s.io/queue-name: user-queue  # Matches LocalQueue name
 spec:
+  suspend: true  # Required for Kueue - job starts suspended
   template:
     spec:
       containers:
@@ -194,6 +213,8 @@ spec:
         image: nvidia/cuda:12.0-base
         command: ["nvidia-smi"]
         resources:
+          requests:
+            nvidia.com/gpu: 1
           limits:
             nvidia.com/gpu: 1
       restartPolicy: Never
@@ -234,7 +255,7 @@ KUBECONFIG=$SPOKE2_KUBECONFIG oc get jobs -n default  # Should be empty!
 
 ```bash
 # Delete jobs
-oc delete jobs -l kueue.x-k8s.io/queue-name=gpu-queue -n default
+oc delete jobs -l kueue.x-k8s.io/queue-name=user-queue -n default
 
 # Delete Kueue resources
 oc delete -f manifests/

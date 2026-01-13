@@ -108,8 +108,6 @@ spec:
   # Spoke queues should NOT have admission checks
 ```
 
-> ⚠️ **Known Issue:** The addon template incorrectly deploys hub's ClusterQueue spec (with admission checks) to spoke clusters. See [Troubleshooting](99-troubleshooting.md) for workaround.
-
 ## Next Steps
 
 - [Installation Guide](02-installation.md)

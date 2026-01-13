@@ -56,6 +56,9 @@ The result: Jobs submitted to the hub are automatically dispatched to available 
 - RHACM hub with Kueue Addon installed ([Installation Guide](../../02-installation.md))
 - At least one managed cluster in a ManagedClusterSet
 
+!!! warning "Queue Naming"
+    The ClusterQueue and LocalQueue names (`cluster-queue`, `user-queue`) must match what the kueue-addon syncs to spoke clusters. This is configured in your `kueue-addon-values.yaml`.
+
 ---
 
 ## Quick Start
@@ -80,13 +83,13 @@ oc get workload -n default -w
 
 ### Step 1: Create ClusterQueue
 
-The ClusterQueue defines resource quotas and links to admission checks:
+The ClusterQueue defines resource quotas and links to **two** admission checks:
 
 ```yaml
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
-  name: "cluster-queue"
+  name: "cluster-queue"  # Must match addon's clusterQueue.name!
 spec:
   namespaceSelector: {}  # Accept jobs from all namespaces
   resourceGroups:
@@ -99,24 +102,38 @@ spec:
       - name: "memory"
         nominalQuota: 256Gi
   admissionChecks:
-  - multikueue   # Links to MultiKueue controller
+  - multikueue-demo         # MultiKueue controller
+  - multikueue-config-demo  # OCM Placement controller
 ```
 
-### Step 2: Create AdmissionCheck
+### Step 2: Create AdmissionChecks
 
-The AdmissionCheck tells Kueue to consult the MultiKueue controller before admitting jobs:
+You need **two** AdmissionChecks - one for MultiKueue and one for OCM Placement:
 
 ```yaml
+# 1. MultiKueue controller - dispatches jobs to spoke clusters
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: AdmissionCheck
 metadata:
-  name: multikueue
+  name: multikueue-demo
 spec:
   controllerName: kueue.x-k8s.io/multikueue
   parameters:
     apiGroup: kueue.x-k8s.io
     kind: MultiKueueConfig
-    name: default  # Created by the addon
+    name: default  # Auto-created by the addon
+---
+# 2. OCM Placement controller - selects target clusters
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: AdmissionCheck
+metadata:
+  name: multikueue-config-demo
+spec:
+  controllerName: open-cluster-management.io/placement
+  parameters:
+    apiGroup: cluster.open-cluster-management.io
+    kind: Placement
+    name: default  # Uses default Placement (all clusters)
 ```
 
 ### Step 3: Create LocalQueue
@@ -127,7 +144,7 @@ Users submit jobs to the LocalQueue:
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
-  name: user-queue
+  name: user-queue  # Must match addon's localQueue.name!
   namespace: default
 spec:
   clusterQueue: cluster-queue

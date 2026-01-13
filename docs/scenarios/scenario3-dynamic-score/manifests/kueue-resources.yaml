@@ -1,9 +1,16 @@
-# Scenario 3: Dynamic GPU Queue Resources
+# Scenario 3: Dynamic Score-Based GPU Queue Resources
+#
+# IMPORTANT: The ClusterQueue and LocalQueue names MUST match what the
+# kueue-addon syncs to spoke clusters (configured in kueue-addon-values.yaml).
+# The addon syncs: cluster-queue and user-queue by default.
+#
+# This scenario extends Scenario 2 by using AddonPlacementScore to
+# dynamically route jobs to the cluster with the most available GPUs.
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
-  name: "dynamic-gpu-queue"
+  name: "cluster-queue"  # Must match addon's clusterQueue.name
 spec:
   namespaceSelector: {}
   resourceGroups:
@@ -25,9 +32,9 @@ apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
   namespace: "default"
-  name: "dynamic-gpu-queue"
+  name: "user-queue"  # Must match addon's localQueue.name
 spec:
-  clusterQueue: "dynamic-gpu-queue"
+  clusterQueue: "cluster-queue"
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: AdmissionCheck
@@ -40,6 +47,8 @@ spec:
     kind: MultiKueueConfig
     name: dynamic-gpu-placement
 ---
+# OCM implements an AdmissionCheck controller that watches Placements
+# and auto-generates MultiKueueConfig based on placement decisions
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: AdmissionCheck
 metadata:

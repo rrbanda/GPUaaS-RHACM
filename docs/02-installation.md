@@ -136,6 +136,27 @@ kueueCR:
 #   url: ""
 #   impersonation:
 #     enabled: false
+
+# Default queue resources (synced to spoke clusters)
+# IMPORTANT: Hub ClusterQueue/LocalQueue names must match these!
+clusterQueue:
+  name: cluster-queue
+  namespaceSelector: "{}"
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: "default-flavor"
+      resources:
+      - name: "cpu"
+        nominalQuota: 32
+      - name: "memory"
+        nominalQuota: 128Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: 8
+
+localQueue:
+  name: user-queue
+  namespace: default
 EOF
 
 # Install
@@ -144,6 +165,15 @@ helm install kueue-addon ocm/kueue-addon \
   --create-namespace \
   -f kueue-addon-values.yaml
 ```
+
+!!! warning "Critical: Queue Name Matching"
+    The kueue-addon syncs `cluster-queue` and `user-queue` to spoke clusters.
+    When creating Kueue resources on the hub, you **must use the same names**.
+    
+    If you use different names (e.g., `gpu-cluster-queue`), jobs will fail on spokes with:
+    ```
+    LocalQueue gpu-queue doesn't exist
+    ```
 
 > **Note:** The chart automatically creates the `ManagedClusterSetBinding` when `skipClusterSetBinding: false` (default).
 

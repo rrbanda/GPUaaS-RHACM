@@ -40,7 +40,7 @@ In this scenario, you'll:
 ┌─────────────────────────────────────────────────────────────┐
 │  HUB CLUSTER                                                │
 │  ┌──────────────┐    ┌───────────────┐    ┌──────────────┐ │
-│  │ Dynamic-Queue│───▶│ Dynamic-CQ    │───▶│ Placement    │ │
+│  │ user-queue   │───▶│ cluster-queue │───▶│ Placement    │ │
 │  │              │    │               │    │ (by score)   │ │
 │  └──────────────┘    └───────────────┘    └──────┬───────┘ │
 └──────────────────────────────────────────────────┼─────────┘
@@ -51,9 +51,11 @@ In this scenario, you'll:
        ┌──────────────┐                   ┌──────────────┐
        │ gpu-cluster-1│                   │ gpu-cluster-2│
        │ Score: 20    │                   │ Score: 80 ✅ │
-       │ (busy)       │                   │ (idle)       │
+       │ (busy)       │                   │ (has queue)  │
        └──────────────┘                   └──────────────┘
 ```
+
+> **Note:** Queue names (`cluster-queue`, `user-queue`) must match what's mirrored to spoke clusters by the kueue-addon.
 
 ---
 
@@ -106,6 +108,10 @@ spec:
 
 - Completed [Scenario 2](../scenario2-label-based/) or equivalent setup
 - Multiple managed clusters (or simulate with score changes)
+
+!!! warning "Important: Queue Naming"
+    The ClusterQueue and LocalQueue names on the hub **must match** what the kueue-addon syncs to spoke clusters.
+    By default, the addon syncs `cluster-queue` and `user-queue`. See [Scenario 2 prerequisites](../scenario2-label-based/#prerequisites) for details.
 
 ---
 
@@ -198,35 +204,42 @@ spec:
 
 ### Step 4: Create ClusterQueue and LocalQueue
 
+The queue names **must match** what the addon syncs to spokes:
+
 ```yaml
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
-  name: dynamic-gpu-queue
+  name: cluster-queue  # Must match addon's clusterQueue.name!
 spec:
   namespaceSelector: {}
   resourceGroups:
   - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
     flavors:
-    - name: gpu-flavor
+    - name: default-flavor
       resources:
       - name: "cpu"
-        nominalQuota: 100
+        nominalQuota: 32
       - name: "memory"
-        nominalQuota: 256Gi
+        nominalQuota: 128Gi
       - name: "nvidia.com/gpu"
         nominalQuota: 8
   admissionChecks:
-  - dynamic-gpu-check
+  - multikueue-dynamic   # MultiKueue controller
+  - dynamic-gpu-check    # OCM Placement controller
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
-  name: dynamic-gpu-queue
+  name: user-queue  # Must match addon's localQueue.name!
   namespace: default
 spec:
-  clusterQueue: dynamic-gpu-queue
+  clusterQueue: cluster-queue
 ```
+
+!!! info "Why these names?"
+    The kueue-addon mirrors `cluster-queue` and `user-queue` to spoke clusters.
+    Using different names will cause: `LocalQueue xyz doesn't exist`
 
 ---
 
@@ -312,7 +325,7 @@ prioritizerPolicy:
 
 ```bash
 # Delete jobs
-oc delete jobs -l kueue.x-k8s.io/queue-name=dynamic-gpu-queue -n default
+oc delete jobs -l kueue.x-k8s.io/queue-name=user-queue -n default
 
 # Delete Kueue resources
 oc delete -f manifests/

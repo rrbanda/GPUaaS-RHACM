@@ -1,15 +1,16 @@
 # Sample GPU Job for Scenario 2
+# Submits to user-queue which routes to GPU clusters via label-based Placement
 apiVersion: batch/v1
 kind: Job
 metadata:
   generateName: demo2-gpu-job-
   namespace: default
   labels:
-    kueue.x-k8s.io/queue-name: "gpu-queue"
+    kueue.x-k8s.io/queue-name: "user-queue"  # Must match addon's localQueue.name
 spec:
   parallelism: 1
   completions: 1
-  suspend: true
+  suspend: true  # Required for Kueue - job starts suspended
   template:
     spec:
       containers:

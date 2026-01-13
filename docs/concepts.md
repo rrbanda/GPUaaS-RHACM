@@ -109,12 +109,87 @@ spec:
 ```
 
 
-## Personas
+## Personas and Use Cases
 
-| Persona | Role | Pain Points | How MultiKueue Helps |
-|---------|------|-------------|---------------------|
-| **Data Scientist** | Submits AI/ML training jobs | "Which cluster is best?", "I need more GPU but don't know where to get it" | Submit to one queue, automatically routed to best cluster |
-| **Hub Admin** | Manages cluster fleet | "Why is no one using these GPUs?", "How do I configure all these Kueues?" | Centralized management, automatic configuration via add-on |
+### Separation of Concerns
+
+The power of RHACM + MultiKueue is the **clear separation between administration and usage**:
+
+| Persona | Needs to Know | Doesn't Need to Know |
+|---------|---------------|---------------------|
+| **RHACM Admin** | How to create Placements | How to write Kueue jobs |
+| **Data Scientist** | How to use Kueue LocalQueues | How Placement works, which clusters exist |
+
+> **Key Insight:** RHACM is just the engine to drive the outcomes designed and desired by the users.
+
+---
+
+### RHACM Admin Workflow
+
+The hub admin enables GPU-as-a-Service for their organization:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  RHACM ADMIN WORKFLOW                                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  1. Enable MultiKueue Addon                                             │
+│     └─→ Addon installs RHBoK on Hub (Manager Cluster)                  │
+│     └─→ Addon installs RHBoK on managed clusters (Worker Clusters)     │
+│     └─→ Addon installs "RHACM Admission Check Controller"              │
+│                                                                         │
+│  2. Create Placements for different use cases                          │
+│     └─→ GPUPlacement: clusters with nvidia GPUs                        │
+│     └─→ CPUPlacement: CPU-only clusters                                │
+│     └─→ GoldGPUPlacement: premium GPU clusters (charge more?)          │
+│                                                                         │
+│  3. RHACM Admission Check Controller converts Placements               │
+│     └─→ Creates properly configured Kueue + MultiKueue resources       │
+│     └─→ Standard Kueue controller manages MultiKueue config            │
+│                                                                         │
+│  4. Hub is now a functioning Kueue Manager Cluster                     │
+│     └─→ Ready to receive jobs from Data Scientists                     │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Admin creates LocalQueues for different tiers:**
+
+| LocalQueue | Backed By | Target Users | Cost Model |
+|------------|-----------|--------------|------------|
+| `gpu-queue` | GPUPlacement | ML Engineers | Standard |
+| `cpu-queue` | CPUPlacement | Data Processing | Standard |
+| `gold-gpu-queue` | GoldGPUPlacement | Priority Users | Premium |
+
+---
+
+### Data Scientist Workflow
+
+Data scientists **only need to know which LocalQueue to use**:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  DATA SCIENTIST WORKFLOW                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  1. Ask Admin: "Which queue should I use?"                             │
+│     └─→ "Use gpu-queue for GPU training"                               │
+│     └─→ "Use cpu-queue for data preprocessing"                         │
+│     └─→ "Use gold-gpu-queue for critical jobs (costs more)"            │
+│                                                                         │
+│  2. Submit job with queue label                                        │
+│     └─→ labels:                                                        │
+│           kueue.x-k8s.io/queue-name: gpu-queue                         │
+│                                                                         │
+│  3. Job automatically runs on best available cluster                   │
+│     └─→ No need to know which cluster                                  │
+│     └─→ No need for multiple kubeconfigs                               │
+│     └─→ Results sync back to hub                                       │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**What Data Scientists DON'T need to know:**
+- Which clusters exist
+- How Placement works
+- MultiKueue configuration
+- Cluster networking or credentials
 
 ---
 
@@ -154,25 +229,41 @@ With RHACM + MultiKueue:
 
 ---
 
-## Multi-Team Scenario: Different Placements for Different Teams
+## Multi-Team Scenario: Different Queues for Different Needs
 
-Organizations can set up **separate placements for different teams** with their own queues and cluster targeting:
-
-- **GPUPlacement** → Routes to GPU clusters (Cluster 2, Cluster 5)
-- **CPUPlacement** → Routes to CPU clusters (Cluster 1)
-- **GoldClassPlacement** → Routes to premium "Creme of the crop" clusters
+Organizations can set up **separate LocalQueues backed by different Placements**:
 
 ![Multi-Queue Architecture](assets/slides/multi-queue-architecture.png)
 
-### Example Placements
+### Queue Configuration by Admin
 
-| Placement | Team | Target Clusters | Use Case |
-|-----------|------|-----------------|----------|
-| **GPUPlacement** | ML Engineers | Clusters with `accelerator=nvidia-*` | Training jobs |
-| **CPUPlacement** | Data Processing | Clusters with `cluster-type=cpu-only` | ETL, preprocessing |
-| **GoldClassPlacement** | Priority Users | Premium clusters with best GPUs | Critical workloads |
+| LocalQueue | Placement | Target Clusters | Who Uses It |
+|------------|-----------|-----------------|-------------|
+| `gpu-queue` | GPUPlacement | Clusters with `accelerator=nvidia-*` | ML training jobs |
+| `cpu-queue` | CPUPlacement | Clusters with `cluster-type=cpu-only` | ETL, preprocessing |
+| `gold-gpu-queue` | GoldGPUPlacement | Premium A100 clusters | Critical/priority jobs |
 
-Each team submits to their own LocalQueue, and Placement routes to the appropriate clusters based on labels and policies.
+### How It Works
+
+1. **Admin creates Placements** with cluster selection criteria
+2. **Admin creates LocalQueues** linked to each Placement via ClusterQueue + AdmissionCheck
+3. **Admin tells users** which queue to use based on their needs
+4. **Users submit jobs** with the appropriate queue label
+5. **RHACM routes jobs** to the right clusters automatically
+
+### Example: Tiered GPU Service
+
+```yaml
+# User submits to standard GPU queue
+labels:
+  kueue.x-k8s.io/queue-name: gpu-queue
+
+# Power user submits to premium queue (faster, more GPUs)
+labels:
+  kueue.x-k8s.io/queue-name: gold-gpu-queue
+```
+
+The admin can even implement **chargeback** - premium queues cost more!
 
 
 ## The Value of RHACM + MultiKueue

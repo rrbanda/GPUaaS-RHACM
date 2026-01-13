@@ -1,10 +1,18 @@
 # Scenario 2: GPU Queue Resources
 # Uses label-based Placement for GPU cluster selection
+#
+# IMPORTANT: The ClusterQueue and LocalQueue names MUST match what the
+# kueue-addon syncs to spoke clusters (configured in kueue-addon-values.yaml).
+# The addon syncs: cluster-queue and user-queue by default.
+#
+# If you need different queue names:
+# 1. Update kueue-addon-values.yaml with your custom queue names
+# 2. helm upgrade kueue-addon ... -f kueue-addon-values.yaml
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
-  name: "gpu-cluster-queue"
+  name: "cluster-queue"  # Must match addon's clusterQueue.name
 spec:
   namespaceSelector: {}
   resourceGroups:
@@ -26,9 +34,9 @@ apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
   namespace: "default"
-  name: "gpu-queue"
+  name: "user-queue"  # Must match addon's localQueue.name
 spec:
-  clusterQueue: "gpu-cluster-queue"
+  clusterQueue: "cluster-queue"
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: AdmissionCheck
@@ -41,6 +49,8 @@ spec:
     kind: MultiKueueConfig
     name: gpu-placement
 ---
+# OCM implements an AdmissionCheck controller that watches Placements
+# and auto-generates MultiKueueConfig based on placement decisions
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: AdmissionCheck
 metadata:

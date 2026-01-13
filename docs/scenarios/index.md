@@ -1,4 +1,3 @@
-
 # Demo Scenarios
 
 Choose a scenario based on your use case:
@@ -17,12 +16,13 @@ Scenario 2 (Label-Based)    → Jobs go to clusters with specific GPU labels
 Scenario 3 (Dynamic Score)  → Jobs go to cluster with HIGHEST GPU availability
 ```
 
-## Important
+## Prerequisites
 
-After deploying any scenario, always run the workaround script:
+Before running any scenario:
 
-```bash
-./scripts/fix-spoke-clusterqueues.sh
-```
+1. Complete the [Installation Guide](../02-installation.md)
+2. Verify MultiKueueClusters are connected: `oc get multikueuecluster`
+3. Ensure spoke clusters have the kueue-addon installed
 
-See [Troubleshooting](../docs/99-troubleshooting.md) for details.
+!!! warning "Queue Naming"
+    The ClusterQueue and LocalQueue names (`cluster-queue`, `user-queue`) must match what the kueue-addon syncs to spoke clusters. See the [Installation Guide](../02-installation.md) for details.
