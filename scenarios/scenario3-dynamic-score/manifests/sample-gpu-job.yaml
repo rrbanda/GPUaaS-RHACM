@@ -1,0 +1,28 @@
+# Sample GPU Job for Scenario 3 (Dynamic Score-Based)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: demo3-gpu-job-
+  namespace: default
+  labels:
+    kueue.x-k8s.io/queue-name: "dynamic-gpu-queue"
+spec:
+  parallelism: 1
+  completions: 1
+  suspend: true
+  template:
+    spec:
+      containers:
+      - name: gpu-worker
+        image: nvcr.io/nvidia/cuda:12.0.0-base-ubuntu22.04
+        command: ["nvidia-smi", "-L"]
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+            nvidia.com/gpu: "1"
+      restartPolicy: Never

@@ -1,0 +1,21 @@
+# Scenario 2: Label-Based GPU Placement
+# Selects only clusters with accelerator=nvidia-l4 label
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: gpu-placement
+  namespace: openshift-kueue-operator
+spec:
+  clusterSets:
+  - global
+  tolerations:
+  - key: cluster.open-cluster-management.io/unreachable
+    operator: Exists
+  - key: cluster.open-cluster-management.io/unavailable
+    operator: Exists
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            accelerator: nvidia-l4

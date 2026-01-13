@@ -1,0 +1,40 @@
+# Sample AddonPlacementScores for testing
+# In production, these would be populated by a monitoring addon
+---
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: AddOnPlacementScore
+metadata:
+  name: resource-usage-score
+  namespace: spoke-cluster1
+status:
+  conditions:
+  - lastTransitionTime: "2024-01-01T00:00:00Z"
+    message: Score calculated successfully
+    reason: ScoreCalculated
+    status: "True"
+    type: ScoreAvailable
+  scores:
+  - name: gpuClusterAvailable
+    value: 80
+  - name: cpuClusterAvailable
+    value: 50
+  validUntil: "2030-01-01T00:00:00Z"
+---
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: AddOnPlacementScore
+metadata:
+  name: resource-usage-score
+  namespace: spoke-cluster2
+status:
+  conditions:
+  - lastTransitionTime: "2024-01-01T00:00:00Z"
+    message: Score calculated successfully
+    reason: ScoreCalculated
+    status: "True"
+    type: ScoreAvailable
+  scores:
+  - name: gpuClusterAvailable
+    value: 0  # No GPU on this cluster
+  - name: cpuClusterAvailable
+    value: 90
+  validUntil: "2030-01-01T00:00:00Z"

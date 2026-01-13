@@ -1,0 +1,52 @@
+# Scenario 3: Dynamic GPU Queue Resources
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: "dynamic-gpu-queue"
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: "default-flavor"
+      resources:
+      - name: "cpu"
+        nominalQuota: 32
+      - name: "memory"
+        nominalQuota: 128Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: 8
+  admissionChecks:
+  - multikueue-dynamic
+  - dynamic-gpu-check
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  namespace: "default"
+  name: "dynamic-gpu-queue"
+spec:
+  clusterQueue: "dynamic-gpu-queue"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: AdmissionCheck
+metadata:
+  name: multikueue-dynamic
+spec:
+  controllerName: kueue.x-k8s.io/multikueue
+  parameters:
+    apiGroup: kueue.x-k8s.io
+    kind: MultiKueueConfig
+    name: dynamic-gpu-placement
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: AdmissionCheck
+metadata:
+  name: dynamic-gpu-check
+spec:
+  controllerName: open-cluster-management.io/placement
+  parameters:
+    apiGroup: cluster.open-cluster-management.io
+    kind: Placement
+    name: dynamic-gpu-placement

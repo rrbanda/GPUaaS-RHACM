@@ -1,0 +1,53 @@
+# Scenario 2: GPU Queue Resources
+# Uses label-based Placement for GPU cluster selection
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: "gpu-cluster-queue"
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: "default-flavor"
+      resources:
+      - name: "cpu"
+        nominalQuota: 32
+      - name: "memory"
+        nominalQuota: 128Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: 4
+  admissionChecks:
+  - multikueue-gpu
+  - gpu-placement-check
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  namespace: "default"
+  name: "gpu-queue"
+spec:
+  clusterQueue: "gpu-cluster-queue"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: AdmissionCheck
+metadata:
+  name: multikueue-gpu
+spec:
+  controllerName: kueue.x-k8s.io/multikueue
+  parameters:
+    apiGroup: kueue.x-k8s.io
+    kind: MultiKueueConfig
+    name: gpu-placement
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: AdmissionCheck
+metadata:
+  name: gpu-placement-check
+spec:
+  controllerName: open-cluster-management.io/placement
+  parameters:
+    apiGroup: cluster.open-cluster-management.io
+    kind: Placement
+    name: gpu-placement

@@ -1,0 +1,19 @@
+# GitHub Pages Configuration
+title: GPUaaS with RHACM
+description: GPU-as-a-Service using MultiKueue and Red Hat Advanced Cluster Management
+theme: jekyll-theme-minimal
+
+# Repository info
+repository: rrbanda/GPUaaS-RHACM
+
+# Navigation
+header_pages:
+  - docs/concepts.md
+  - docs/00-prerequisites.md
+  - docs/01-architecture.md
+  - docs/02-installation.md
+
+# Exclude from build
+exclude:
+  - LICENSE
+  - scripts/

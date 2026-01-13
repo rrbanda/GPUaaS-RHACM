@@ -1,0 +1,30 @@
+# Scenario 3: Dynamic Score-Based Placement
+# Selects clusters based on real-time GPU availability scores
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: dynamic-gpu-placement
+  namespace: openshift-kueue-operator
+spec:
+  clusterSets:
+  - global
+  tolerations:
+  - key: cluster.open-cluster-management.io/unreachable
+    operator: Exists
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+          - key: accelerator
+            operator: Exists
+  numberOfClusters: 1  # Select only the best cluster
+  prioritizerPolicy:
+    mode: Exact
+    configurations:
+    - scoreCoordinate:
+        type: AddOn
+        addOn:
+          resourceName: resource-usage-score
+          scoreName: gpuClusterAvailable
+      weight: 1
