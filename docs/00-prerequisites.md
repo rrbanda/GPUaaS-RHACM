@@ -23,9 +23,30 @@
 
 ### 3. Networking
 
-- Hub cluster must be able to reach managed cluster API servers
-- Managed clusters must be able to reach hub cluster API server
-- If using proxy, ensure proper configuration
+With RHACM + MultiKueue using **cluster-proxy** (recommended):
+
+| Direction | Requirement | Notes |
+|-----------|-------------|-------|
+| Managed → Hub | **Required** | Managed clusters must reach hub API server |
+| Hub → Managed | **Not required** | Cluster-proxy handles connectivity |
+
+> **Key Benefit:** The hub does NOT need direct network access to managed cluster API servers. 
+> RHACM's cluster-proxy addon creates a tunnel from managed clusters to the hub, enabling 
+> the hub to access managed cluster APIs through this reverse tunnel.
+
+**Cluster-Proxy Architecture:**
+```
+┌─────────────────┐         ┌─────────────────┐
+│  Managed Cluster │ ──────▶ │   Hub Cluster   │
+│  (initiates     │         │  (cluster-proxy │
+│   connection)   │         │   receives)     │
+└─────────────────┘         └─────────────────┘
+```
+
+This is ideal for environments where:
+- Managed clusters are behind firewalls
+- Hub cannot reach managed cluster networks
+- You want a secure, pull-based model
 
 ## Cluster Setup
 
