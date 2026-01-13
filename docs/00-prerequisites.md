@@ -1,8 +1,7 @@
 ---
-layout: default
-title: Prerequisites
-nav_order: 3
-description: "What you need before starting"
+title: "Prerequisites"
+excerpt: "What you need before starting"
+permalink: /prerequisites/
 ---
 
 

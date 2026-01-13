@@ -1,9 +1,7 @@
 ---
-layout: default
-title: "Scenario 3: Dynamic Score"
-parent: Demo Scenarios
-nav_order: 3
-description: "Real-time GPU availability"
+title: "Scenario 3: Dynamic Score-Based Selection"
+excerpt: "Select clusters based on real-time GPU availability"
+permalink: /scenarios/dynamic-score/
 ---
 
 

@@ -1,9 +1,12 @@
 ---
-layout: default
-title: Home
-nav_order: 1
-description: "GPU-as-a-Service using MultiKueue and RHACM"
+title: "GPUaaS with RHACM"
+excerpt: "GPU-as-a-Service using MultiKueue and RHACM for Kubernetes-native Job Queueing at Scale"
 permalink: /
+header:
+  overlay_color: "#1a1a2e"
+  actions:
+    - label: "View on GitHub"
+      url: "https://github.com/rrbanda/GPUaaS-RHACM"
 ---
 
 # GPUaaS with Red Hat Advanced Cluster Management

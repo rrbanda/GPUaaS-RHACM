@@ -1,9 +1,7 @@
 ---
-layout: default
-title: "Scenario 1: Basic"
-parent: Demo Scenarios
-nav_order: 1
-description: "Dispatch jobs to all managed clusters"
+title: "Scenario 1: Basic MultiKueue"
+excerpt: "Dispatch jobs to all managed clusters"
+permalink: /scenarios/basic/
 ---
 
 

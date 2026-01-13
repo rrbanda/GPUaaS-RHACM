@@ -1,8 +1,7 @@
 ---
-layout: default
-title: Concepts
-nav_order: 2
-description: "Learn about Kueue, MultiKueue, and RHACM integration"
+title: "Concepts"
+excerpt: "Learn about Kueue, MultiKueue, and RHACM integration"
+permalink: /concepts/
 ---
 
 

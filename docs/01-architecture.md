@@ -1,8 +1,7 @@
 ---
-layout: default
-title: Architecture
-nav_order: 4
-description: "Technical deep dive into components"
+title: "Architecture"
+excerpt: "Technical deep dive into components"
+permalink: /architecture/
 ---
 
 

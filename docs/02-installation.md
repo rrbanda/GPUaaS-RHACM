@@ -1,8 +1,7 @@
 ---
-layout: default
-title: Installation
-nav_order: 5
-description: "Step-by-step setup guide"
+title: "Installation"
+excerpt: "Step-by-step setup guide"
+permalink: /installation/
 ---
 
 

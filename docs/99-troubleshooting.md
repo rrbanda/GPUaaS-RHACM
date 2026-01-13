@@ -1,8 +1,7 @@
 ---
-layout: default
-title: Troubleshooting
-nav_order: 9
-description: "Known issues and fixes"
+title: "Troubleshooting"
+excerpt: "Known issues and fixes"
+permalink: /troubleshooting/
 ---
 
 

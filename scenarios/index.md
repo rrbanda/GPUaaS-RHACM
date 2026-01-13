@@ -1,9 +1,7 @@
 ---
-layout: default
-title: Demo Scenarios
-nav_order: 6
-has_children: true
-description: "Step-by-step demo scenarios"
+title: "Demo Scenarios"
+excerpt: "Step-by-step demo scenarios for GPU-as-a-Service"
+permalink: /scenarios/
 ---
 
 # Demo Scenarios
