@@ -26,10 +26,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install MkDocs dependencies
-        run: |
-          pip install mkdocs-material mkdocs-mermaid2-plugin
+        run: pip install mkdocs-material
 
       - name: Build MkDocs site
         run: mkdocs build
@@ -50,11 +50,12 @@ jobs:
         working-directory: demo-app
         run: npm run build
 
-      # Copy demo app to site
+      # Combine sites
       - name: Copy demo app to site
         run: |
           mkdir -p site/demo
           cp -r demo-app/out/* site/demo/
+          touch site/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
