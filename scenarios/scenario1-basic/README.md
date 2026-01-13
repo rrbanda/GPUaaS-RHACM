@@ -38,34 +38,20 @@ In this scenario, we set up MultiKueue to dispatch jobs to **all managed cluster
 
 ## Architecture
 
-```
-                    ┌─────────────────┐
-                    │   Hub Cluster   │
-                    │                 │
-                    │  ┌───────────┐  │
-                    │  │ Job       │  │
-                    │  │ (user-    │  │
-                    │  │  queue)   │  │
-                    │  └─────┬─────┘  │
-                    │        │        │
-                    │  ┌─────▼─────┐  │
-                    │  │ Placement │  │
-                    │  │ (default) │  │
-                    │  │ All       │  │
-                    │  │ Clusters  │  │
-                    │  └─────┬─────┘  │
-                    └────────┼────────┘
-                             │
-           ┌─────────────────┼─────────────────┐
-           │                 │                 │
-           ▼                 ▼                 ▼
-    ┌────────────┐    ┌────────────┐    ┌────────────┐
-    │ Spoke 1    │    │ Spoke 2    │    │ Spoke N    │
-    │ (GPU: L4)  │    │ (CPU Only) │    │ ...        │
-    │            │    │            │    │            │
-    │ Job runs   │    │ Job runs   │    │ Job runs   │
-    │ here       │    │ here       │    │ here       │
-    └────────────┘    └────────────┘    └────────────┘
+```mermaid
+flowchart TB
+    subgraph hub["🖥️ Hub Cluster"]
+        job["Job<br/>(user-queue)"] --> placement["Placement (default)<br/>All Clusters"]
+    end
+    
+    placement --> s1["🟢 Spoke 1<br/>(GPU: L4)<br/>Job runs here"]
+    placement --> s2["⚪ Spoke 2<br/>(CPU Only)<br/>Job runs here"]
+    placement --> sn["📦 Spoke N<br/>...<br/>Job runs here"]
+    
+    style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
+    style s1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:2px,color:#fff
+    style s2 fill:#1a1a2e,stroke:#90a4ae,stroke-width:2px,color:#fff
+    style sn fill:#1a1a2e,stroke:#78909c,stroke-width:1px,color:#fff
 ```
 
 ## Prerequisites
@@ -223,7 +209,7 @@ oc get workload -n default -w
 oc get workload -n default -o jsonpath='{.items[0].status.nominatedClusterNames}'
 
 # Check job on spoke cluster
-KUBECONFIG=/tmp/spoke-kubeconfig oc get job -n default
+KUBECONFIG=$SPOKE_KUBECONFIG oc get job -n default
 ```
 
 ## Expected Results
@@ -257,13 +243,13 @@ oc get workload -n default -o jsonpath='{.items[0].status.admissionChecks}'
 Check spoke ClusterQueue doesn't have admission checks:
 
 ```bash
-KUBECONFIG=/tmp/spoke-kubeconfig oc get clusterqueue -o yaml | grep admissionChecks
+KUBECONFIG=$SPOKE_KUBECONFIG oc get clusterqueue -o yaml | grep admissionChecks
 ```
 
 If it has admission checks, apply the workaround:
 
 ```bash
-KUBECONFIG=/tmp/spoke-kubeconfig oc patch clusterqueue cluster-queue \
+KUBECONFIG=$SPOKE_KUBECONFIG oc patch clusterqueue cluster-queue \
   --type=json -p='[{"op": "remove", "path": "/spec/admissionChecks"}]'
 ```
 

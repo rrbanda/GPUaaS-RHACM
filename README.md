@@ -50,24 +50,28 @@ This demo uses **3 OpenShift clusters** - 1 hub and 2 spoke clusters with differ
 | **spoke-cluster1** | Worker | **NVIDIA L4 GPUs** | `accelerator=nvidia-l4` | GPU workloads |
 | **spoke-cluster2** | Worker | CPU only | `cluster-type=cpu-only` | CPU workloads |
 
-```
-                    ┌─────────────────────┐
-                    │      HUB CLUSTER    │
-                    │  (RHACM + MultiKueue)│
-                    └──────────┬──────────┘
-                               │
-              ┌────────────────┴────────────────┐
-              │                                 │
-              ▼                                 ▼
-    ┌─────────────────────┐         ┌─────────────────────┐
-    │   spoke-cluster1    │         │   spoke-cluster2    │
-    │   ╔═══════════════╗ │         │                     │
-    │   ║  NVIDIA L4    ║ │         │   CPU Only          │
-    │   ║  GPU x4       ║ │         │   (No GPU)          │
-    │   ╚═══════════════╝ │         │                     │
-    │   accelerator:      │         │   cluster-type:     │
-    │     nvidia-l4       │         │     cpu-only        │
-    └─────────────────────┘         └─────────────────────┘
+```mermaid
+flowchart TB
+    subgraph hub["🖥️ HUB CLUSTER"]
+        rhacm["RHACM + MultiKueue"]
+    end
+    
+    subgraph spoke1["spoke-cluster1"]
+        gpu["🟢 NVIDIA L4 GPUs x4"]
+        label1["accelerator: nvidia-l4"]
+    end
+    
+    subgraph spoke2["spoke-cluster2"]
+        cpu["⚪ CPU Only"]
+        label2["cluster-type: cpu-only"]
+    end
+    
+    hub -->|"GPU Jobs"| spoke1
+    hub -->|"CPU Jobs"| spoke2
+    
+    style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
+    style spoke1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:2px,color:#fff
+    style spoke2 fill:#1a1a2e,stroke:#90a4ae,stroke-width:2px,color:#fff
 ```
 
 > **Note:** The scenarios demonstrate how Placement selects the right cluster based on workload requirements (GPU vs CPU).

@@ -85,7 +85,7 @@ helm repo add ocm https://open-cluster-management.io/helm-charts
 helm repo update
 
 # Create values file for OpenShift
-cat <<EOF > /tmp/kueue-addon-values.yaml
+cat <<EOF > kueue-addon-values.yaml
 kueue:
   namespace: "openshift-kueue-operator"
 
@@ -110,7 +110,7 @@ EOF
 helm install kueue-addon ocm/kueue-addon \
   -n open-cluster-management-addon \
   --create-namespace \
-  -f /tmp/kueue-addon-values.yaml
+  -f kueue-addon-values.yaml
 ```
 
 ### Verify Addon Installation

@@ -23,26 +23,20 @@ description: "Learn about Kueue, MultiKueue, and RHACM integration"
 
 ### How Kueue Works
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    Kueue Flow                        │
-│                                                      │
-│   User submits Job ──▶ Workload created             │
-│         │                    │                       │
-│         ▼                    ▼                       │
-│   Job suspended ◀── Workload queued in LocalQueue   │
-│         │                    │                       │
-│         │                    ▼                       │
-│         │           ClusterQueue evaluates           │
-│         │           - Quota available?               │
-│         │           - AdmissionChecks pass?          │
-│         │                    │                       │
-│         │                    ▼                       │
-│         └──── Job unsuspended when admitted         │
-│                              │                       │
-│                              ▼                       │
-│                    Job runs on cluster              │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[User submits Job] --> B[Workload created]
+    B --> C[Job suspended]
+    C --> D[Workload queued in LocalQueue]
+    D --> E{ClusterQueue evaluates}
+    E --> F{Quota available?}
+    E --> G{AdmissionChecks pass?}
+    F --> |Yes| H[Job unsuspended]
+    G --> |Yes| H
+    H --> I[✅ Job runs on cluster]
+    
+    style A fill:#4fc3f7,color:#000
+    style I fill:#66bb6a,color:#000
 ```
 
 ### Why Kueue for AI/ML Workloads?
@@ -78,24 +72,20 @@ MultiKueue allows:
 
 ### MultiKueue Architecture
 
-```
-┌───────────────────────────────────────┐
-│           HUB CLUSTER                 │
-│                                       │
-│  ┌─────────────┐   ┌───────────────┐ │
-│  │ ClusterQueue│──▶│ MultiKueue    │ │
-│  │ + Admission │   │ Controller    │ │
-│  │   Checks    │   └───────┬───────┘ │
-│  └─────────────┘           │         │
-└────────────────────────────┼─────────┘
-                             │
-         ┌───────────────────┼───────────────────┐
-         │                   │                   │
-         ▼                   ▼                   ▼
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  Worker Cluster │ │  Worker Cluster │ │  Worker Cluster │
-│     (GPU)       │ │     (GPU)       │ │     (CPU)       │
-└─────────────────┘ └─────────────────┘ └─────────────────┘
+```mermaid
+flowchart TB
+    subgraph hub["HUB CLUSTER"]
+        cq["ClusterQueue + AdmissionChecks"] --> mk["MultiKueue Controller"]
+    end
+    
+    hub --> w1["🟢 Worker Cluster (GPU)"]
+    hub --> w2["🟢 Worker Cluster (GPU)"]
+    hub --> w3["⚪ Worker Cluster (CPU)"]
+    
+    style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
+    style w1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:2px,color:#fff
+    style w2 fill:#1a1a2e,stroke:#66bb6a,stroke-width:2px,color:#fff
+    style w3 fill:#1a1a2e,stroke:#90a4ae,stroke-width:2px,color:#fff
 ```
 
 ---
@@ -194,27 +184,26 @@ With RHACM + MultiKueue:
 3. **Jobs run on the best cluster** - automatically selected
 4. **Results sync back** to the hub
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         RHOAI Workflow                           │
-│                                                                  │
-│   Data Scientist                        Hub Admin               │
-│        │                                    │                    │
-│        │ Submit training job                │ Create Placement   │
-│        │ to LocalQueue                      │ (GPU criteria)     │
-│        ▼                                    ▼                    │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │                 RHACM Hub Cluster                        │   │
-│   │                                                          │   │
-│   │   LocalQueue ──▶ ClusterQueue ──▶ Placement ──▶ Worker  │   │
-│   └─────────────────────────────────────────────────────────┘   │
-│                              │                                   │
-│                              ▼                                   │
-│   ┌─────────────────┐   ┌─────────────────┐                     │
-│   │ GPU Cluster 1   │   │ GPU Cluster 2   │                     │
-│   │ (Job runs here) │   │ (standby)       │                     │
-│   └─────────────────┘   └─────────────────┘                     │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph users["👥 Users"]
+        ds["Data Scientist"]
+        admin["Hub Admin"]
+    end
+    
+    subgraph hub["RHACM Hub Cluster"]
+        lq["LocalQueue"] --> cq["ClusterQueue"]
+        cq --> pl["Placement"]
+        admin -.->|Creates| pl
+    end
+    
+    ds -->|Submit Job| lq
+    pl --> g1["🟢 GPU Cluster 1<br/>(Job runs here)"]
+    pl -.-> g2["⚪ GPU Cluster 2<br/>(standby)"]
+    
+    style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
+    style g1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:2px,color:#fff
+    style g2 fill:#1a1a2e,stroke:#90a4ae,stroke-width:1px,color:#fff
 ```
 
 ### Key Benefits for AI/ML Teams

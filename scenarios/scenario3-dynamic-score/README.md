@@ -41,40 +41,22 @@ In this scenario, we use OCM Placement with **AddonPlacementScore** to dynamical
 
 ## Architecture
 
-```
-                    ┌─────────────────────────────┐
-                    │         Hub Cluster         │
-                    │                             │
-                    │  ┌───────────────────────┐  │
-                    │  │ GPU Job               │  │
-                    │  │ (dynamic-gpu-queue)   │  │
-                    │  └───────────┬───────────┘  │
-                    │              │              │
-                    │  ┌───────────▼───────────┐  │
-                    │  │ Placement             │  │
-                    │  │ (dynamic-gpu)         │  │
-                    │  │                       │  │
-                    │  │ prioritizerPolicy:    │  │
-                    │  │   AddOn:              │  │
-                    │  │     resourceName:     │  │
-                    │  │       resource-usage  │  │
-                    │  │     scoreName:        │  │
-                    │  │       gpuAvailable    │  │
-                    │  └───────────┬───────────┘  │
-                    └──────────────┼──────────────┘
-                                   │
-         ┌─────────────────────────┼─────────────────────────┐
-         │                         │                         │
-         ▼                         ▼                         ▼
-  ┌────────────────┐       ┌────────────────┐       ┌────────────────┐
-  │ Spoke 1        │       │ Spoke 2        │       │ Spoke 3        │
-  │ GPU: L4        │       │ GPU: L4        │       │ GPU: A100      │
-  │                │       │                │       │                │
-  │ Score: 80      │       │ Score: 20      │       │ Score: 95      │
-  │ (3/4 free)     │       │ (1/4 free)     │       │ (7/8 free)     │
-  │                │       │                │       │                │
-  │ ✓ HIGHEST      │       │ ✗ LOW SCORE    │       │ ✓ SELECTED     │
-  └────────────────┘       └────────────────┘       └────────────────┘
+```mermaid
+flowchart TB
+    subgraph hub["🖥️ Hub Cluster"]
+        job["GPU Job<br/>(dynamic-gpu-queue)"]
+        placement["Placement (dynamic-gpu)<br/>prioritizerPolicy: AddOn<br/>scoreName: gpuAvailable"]
+        job --> placement
+    end
+    
+    placement -->|"Score: 80"| s1["🟢 Spoke 1<br/>GPU: L4<br/>3/4 free"]
+    placement -.->|"Score: 20"| s2["⚪ Spoke 2<br/>GPU: L4<br/>1/4 free<br/>❌ LOW"]
+    placement ==>|"Score: 95<br/>✅ SELECTED"| s3["🟣 Spoke 3<br/>GPU: A100<br/>7/8 free"]
+    
+    style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
+    style s1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:2px,color:#fff
+    style s2 fill:#1a1a2e,stroke:#ef5350,stroke-width:1px,color:#888
+    style s3 fill:#1a1a2e,stroke:#ab47bc,stroke-width:3px,color:#fff
 ```
 
 ## Prerequisites

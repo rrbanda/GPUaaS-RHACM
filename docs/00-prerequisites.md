@@ -74,6 +74,30 @@ oc get clusterqueue
 oc get localqueue -A
 ```
 
+## Environment Setup
+
+For commands that need to run on spoke clusters, set up kubeconfig files:
+
+```bash
+# Export kubeconfig paths for spoke clusters
+export SPOKE_KUBECONFIG=~/.kube/spoke-cluster1-config
+export SPOKE2_KUBECONFIG=~/.kube/spoke-cluster2-config
+
+# Generate kubeconfig for spoke-cluster1 (GPU cluster)
+oc login --server=https://api.ocp.fc9th.sandbox2082.opentlc.com:6443 \
+  --kubeconfig=$SPOKE_KUBECONFIG
+
+# Generate kubeconfig for spoke-cluster2 (CPU cluster)  
+oc login --server=https://api.cluster-7g89k.dynamic.redhatworkshops.io:6443 \
+  --kubeconfig=$SPOKE2_KUBECONFIG
+
+# Verify access
+KUBECONFIG=$SPOKE_KUBECONFIG oc get nodes
+KUBECONFIG=$SPOKE2_KUBECONFIG oc get nodes
+```
+
+> **Tip:** Add these exports to your `~/.bashrc` or `~/.zshrc` for persistence.
+
 ## Quick Verification Script
 
 ```bash

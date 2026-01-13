@@ -41,37 +41,22 @@ In this scenario, we use OCM Placement with **label selectors** to dispatch GPU 
 
 ## Architecture
 
-```
-                    ┌─────────────────────────┐
-                    │       Hub Cluster       │
-                    │                         │
-                    │  ┌───────────────────┐  │
-                    │  │ GPU Job           │  │
-                    │  │ (gpu-queue)       │  │
-                    │  │ nvidia.com/gpu: 1 │  │
-                    │  └─────────┬─────────┘  │
-                    │            │            │
-                    │  ┌─────────▼─────────┐  │
-                    │  │ Placement         │  │
-                    │  │ (gpu-placement)   │  │
-                    │  │                   │  │
-                    │  │ labelSelector:    │  │
-                    │  │   accelerator:    │  │
-                    │  │     nvidia-l4     │  │
-                    │  └─────────┬─────────┘  │
-                    └────────────┼────────────┘
-                                 │
-           ┌─────────────────────┼─────────────────────┐
-           │                     │                     │
-           ▼                     ▼                     ▼
-    ┌────────────┐        ┌────────────┐        ┌────────────┐
-    │ Spoke 1    │        │ Spoke 2    │        │ Spoke 3    │
-    │ GPU: L4    │        │ CPU Only   │        │ GPU: T4    │
-    │ ✓ SELECTED │        │ ✗ SKIPPED  │        │ ✗ SKIPPED  │
-    │            │        │            │        │            │
-    │ Job runs   │        │            │        │            │
-    │ here       │        │            │        │            │
-    └────────────┘        └────────────┘        └────────────┘
+```mermaid
+flowchart TB
+    subgraph hub["🖥️ Hub Cluster"]
+        job["GPU Job<br/>(gpu-queue)<br/>nvidia.com/gpu: 1"]
+        placement["Placement (gpu-placement)<br/>labelSelector:<br/>accelerator: nvidia-l4"]
+        job --> placement
+    end
+    
+    placement -->|"✅ SELECTED"| s1["🟢 Spoke 1<br/>GPU: L4<br/>Job runs here"]
+    placement -.->|"❌ SKIPPED"| s2["⚪ Spoke 2<br/>CPU Only"]
+    placement -.->|"❌ SKIPPED"| s3["🟡 Spoke 3<br/>GPU: T4"]
+    
+    style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
+    style s1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:3px,color:#fff
+    style s2 fill:#1a1a2e,stroke:#ef5350,stroke-width:1px,color:#888
+    style s3 fill:#1a1a2e,stroke:#ef5350,stroke-width:1px,color:#888
 ```
 
 ## Prerequisites
@@ -256,8 +241,8 @@ oc get workload -n default -w
 oc get workload -n default -o jsonpath='{.items[-1].status.nominatedClusterNames}'
 
 # Check job on spoke-cluster1
-KUBECONFIG=/tmp/spoke-kubeconfig oc get job -n default
-KUBECONFIG=/tmp/spoke-kubeconfig oc get pods -n default
+KUBECONFIG=$SPOKE_KUBECONFIG oc get job -n default
+KUBECONFIG=$SPOKE_KUBECONFIG oc get pods -n default
 ```
 
 ## Step 7: Verify Label-Based Selection

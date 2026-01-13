@@ -17,7 +17,7 @@ description: "Known issues and fixes"
 **Diagnosis:**
 ```bash
 # Check spoke ClusterQueue
-KUBECONFIG=/tmp/spoke-kubeconfig oc get clusterqueue -o yaml | grep -A 3 admissionChecks
+KUBECONFIG=$SPOKE_KUBECONFIG oc get clusterqueue -o yaml | grep -A 3 admissionChecks
 ```
 
 If you see admission checks like `multikueue-demo`, this is incorrect.
@@ -28,10 +28,10 @@ The RHACM kueue-addon template incorrectly copies the full ClusterQueue spec (in
 **Workaround:**
 ```bash
 # Remove admission checks from spoke ClusterQueues
-KUBECONFIG=/tmp/spoke-kubeconfig oc patch clusterqueue cluster-queue \
+KUBECONFIG=$SPOKE_KUBECONFIG oc patch clusterqueue cluster-queue \
   --type=json -p='[{"op": "remove", "path": "/spec/admissionChecks"}]'
 
-KUBECONFIG=/tmp/spoke-kubeconfig oc patch clusterqueue gpu-cluster-queue \
+KUBECONFIG=$SPOKE_KUBECONFIG oc patch clusterqueue gpu-cluster-queue \
   --type=json -p='[{"op": "remove", "path": "/spec/admissionChecks"}]'
 ```
 
@@ -173,27 +173,27 @@ Kueue Operator requires cluster-wide installation, not namespace-scoped.
 **Diagnosis:**
 ```bash
 # Check pod events
-KUBECONFIG=/tmp/spoke-kubeconfig oc describe pod <pod-name> -n default | tail -10
+KUBECONFIG=$SPOKE_KUBECONFIG oc describe pod <pod-name> -n default | tail -10
 
 # Check node GPU capacity
-KUBECONFIG=/tmp/spoke-kubeconfig oc get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\\.com/gpu
+KUBECONFIG=$SPOKE_KUBECONFIG oc get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\\.com/gpu
 ```
 
 **Solutions:**
 
 1. **Check if GPU nodes exist:**
    ```bash
-   KUBECONFIG=/tmp/spoke-kubeconfig oc get nodes -l nvidia.com/gpu.present=true
+   KUBECONFIG=$SPOKE_KUBECONFIG oc get nodes -l nvidia.com/gpu.present=true
    ```
 
 2. **Check NFD and GPU Operator:**
    ```bash
-   KUBECONFIG=/tmp/spoke-kubeconfig oc get csv -n nvidia-gpu-operator
+   KUBECONFIG=$SPOKE_KUBECONFIG oc get csv -n nvidia-gpu-operator
    ```
 
 3. **Check existing GPU usage:**
    ```bash
-   KUBECONFIG=/tmp/spoke-kubeconfig oc get pods -A -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].resources.requests.nvidia\.com/gpu}{"\n"}{end}' | grep -v "^$"
+   KUBECONFIG=$SPOKE_KUBECONFIG oc get pods -A -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].resources.requests.nvidia\.com/gpu}{"\n"}{end}' | grep -v "^$"
    ```
 
 ---
@@ -231,7 +231,7 @@ echo ""
 echo "=== 7. Spoke ClusterQueues ==="
 for cluster in spoke-cluster1 spoke-cluster2; do
   echo "--- $cluster ---"
-  KUBECONFIG=/tmp/${cluster}-kubeconfig oc get clusterqueue 2>/dev/null || echo "Cannot access $cluster"
+  KUBECONFIG=${KUBECONFIG_DIR}/${cluster}-kubeconfig oc get clusterqueue 2>/dev/null || echo "Cannot access $cluster"
 done
 ```
 
@@ -300,15 +300,15 @@ echo "Done!"
 
 ```bash
 # Collect debug info
-mkdir -p /tmp/kueue-debug
+mkdir -p ./kueue-debug
 
 # Hub info
-oc get workload,clusterqueue,localqueue,admissioncheck,multikueueconfig,multikueuecluster -A -o yaml > /tmp/kueue-debug/hub-resources.yaml
-oc logs deployment/kueue-controller-manager -n openshift-kueue-operator > /tmp/kueue-debug/kueue-controller.log 2>&1
-oc logs deployment/kueue-addon-controller -n open-cluster-management-addon > /tmp/kueue-debug/addon-controller.log 2>&1
+oc get workload,clusterqueue,localqueue,admissioncheck,multikueueconfig,multikueuecluster -A -o yaml > ./kueue-debug/hub-resources.yaml
+oc logs deployment/kueue-controller-manager -n openshift-kueue-operator > ./kueue-debug/kueue-controller.log 2>&1
+oc logs deployment/kueue-addon-controller -n open-cluster-management-addon > ./kueue-debug/addon-controller.log 2>&1
 
 # Tar it up
-tar -czf /tmp/kueue-debug.tar.gz -C /tmp kueue-debug/
+tar -czf ./kueue-debug.tar.gz -C /tmp kueue-debug/
 
-echo "Debug info collected: /tmp/kueue-debug.tar.gz"
+echo "Debug info collected: ./kueue-debug.tar.gz"
 ```
