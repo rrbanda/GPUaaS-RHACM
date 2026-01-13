@@ -248,8 +248,17 @@ export default function Home() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.4 }}
         transition={{ delay: 2 }}
-        className="fixed bottom-4 right-6 z-50 flex items-center gap-3 text-xs text-gray-600"
+        className="fixed bottom-4 right-6 z-50 flex items-center gap-4 text-xs text-gray-600"
       >
+        <a 
+          href={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/slides`}
+          className="flex items-center gap-1 hover:text-gray-400 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          All Slides
+        </a>
         <span className="flex items-center gap-1">
           <kbd className="px-1.5 py-0.5 bg-gray-800/50 rounded text-[10px] border border-gray-700/50">←</kbd>
           <kbd className="px-1.5 py-0.5 bg-gray-800/50 rounded text-[10px] border border-gray-700/50">→</kbd>
