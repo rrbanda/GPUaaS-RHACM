@@ -52,11 +52,20 @@ This is ideal for environments where:
 
 ### Current Environment
 
-| Cluster | Role | URL | GPU | Labels |
-|---------|------|-----|-----|--------|
-| cluster-75hkb | Hub | api.cluster-75hkb.dynamic.redhatworkshops.io:6443 | None | - |
-| spoke-cluster1 | Spoke (GPU) | api.ocp.fc9th.sandbox2082.opentlc.com:6443 | NVIDIA L4 | `accelerator=nvidia-l4`, `cluster-type=gpu` |
-| spoke-cluster2 | Spoke (CPU) | api.cluster-7g89k.dynamic.redhatworkshops.io:6443 | None | `cluster-type=cpu-only` |
+Your RHACM console should show all managed clusters with correct labels:
+
+![RHACM Clusters View](assets/screenshots/rhacm-clusters.png)
+
+| Cluster | Role | Infrastructure | Nodes | Labels |
+|---------|------|----------------|-------|--------|
+| **local-cluster** | Hub | RHACM + Kueue Manager | 1 | - |
+| **spoke-cluster1** | Spoke (GPU) | AWS, OpenShift 4.20 | 4 | `accelerator=nvidia-l4`, `cluster-type=gpu` |
+| **spoke-cluster2** | Spoke (CPU) | AWS, OpenShift 4.18 | 6 | `cluster-type=cpu-only` |
+
+!!! success "What to Look For"
+    - All clusters show **Ready** status
+    - Spoke clusters have appropriate labels (visible in Labels column)
+    - Add-ons count shows 9+ (includes Kueue addon)
 
 ## Verification Commands
 
@@ -101,19 +110,20 @@ export SPOKE_KUBECONFIG=~/.kube/spoke-cluster1-config
 export SPOKE2_KUBECONFIG=~/.kube/spoke-cluster2-config
 
 # Generate kubeconfig for spoke-cluster1 (GPU cluster)
-oc login --server=https://api.ocp.fc9th.sandbox2082.opentlc.com:6443 \
-  --kubeconfig=$SPOKE_KUBECONFIG
+# Replace <spoke1-api-url> with your cluster's API URL
+oc login --server=<spoke1-api-url> --kubeconfig=$SPOKE_KUBECONFIG
 
 # Generate kubeconfig for spoke-cluster2 (CPU cluster)  
-oc login --server=https://api.cluster-7g89k.dynamic.redhatworkshops.io:6443 \
-  --kubeconfig=$SPOKE2_KUBECONFIG
+# Replace <spoke2-api-url> with your cluster's API URL
+oc login --server=<spoke2-api-url> --kubeconfig=$SPOKE2_KUBECONFIG
 
 # Verify access
 KUBECONFIG=$SPOKE_KUBECONFIG oc get nodes
 KUBECONFIG=$SPOKE2_KUBECONFIG oc get nodes
 ```
 
-> **Tip:** Add these exports to your `~/.bashrc` or `~/.zshrc` for persistence.
+!!! tip "Persistence"
+    Add these exports to your `~/.bashrc` or `~/.zshrc` for persistence.
 
 ## Quick Verification Script
 
