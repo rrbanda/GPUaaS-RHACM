@@ -10,15 +10,15 @@ baseurl: "/GPUaaS-RHACM"
 repository: "rrbanda/GPUaaS-RHACM"
 
 # Theme
-remote_theme: "mmistakes/minimal-mistakes@4.26.2"
+theme: minimal-mistakes-jekyll
 minimal_mistakes_skin: "dark"  # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 
 # Plugins
 plugins:
-  - jekyll-remote-theme
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-feed
+  - jekyll-include-cache
 
 # Site Author
 author:
