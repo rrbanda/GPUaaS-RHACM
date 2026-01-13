@@ -1,3 +1,11 @@
+---
+layout: default
+title: Home
+nav_order: 1
+description: "GPU-as-a-Service using MultiKueue and RHACM"
+permalink: /
+---
+
 # GPUaaS with Red Hat Advanced Cluster Management
 
 **GPU-as-a-Service using MultiKueue and RHACM for Kubernetes-native Job Queueing at Scale**
@@ -31,6 +39,38 @@ This repository provides step-by-step instructions for setting up GPU-as-a-Servi
 - **Red Hat Build of Kueue (RHBoK)** - Kubernetes-native job scheduler optimized for batch workloads
 - **MultiKueue** - Extends Kueue functionality into a multi-cluster environment
 - **Red Hat Advanced Cluster Management (RHACM)** - Automates deployment, configuration, and integration of MultiKueue with Placement
+
+## 🖥️ Demo Environment
+
+This demo uses **3 OpenShift clusters** - 1 hub and 2 spoke clusters with different capabilities:
+
+| Cluster | Role | Hardware | Labels | Purpose |
+|---------|------|----------|--------|---------|
+| **Hub** | RHACM Hub + Kueue Manager | CPU only | - | Manages workload dispatch |
+| **spoke-cluster1** | Worker | **NVIDIA L4 GPUs** | `accelerator=nvidia-l4` | GPU workloads |
+| **spoke-cluster2** | Worker | CPU only | `cluster-type=cpu-only` | CPU workloads |
+
+```
+                    ┌─────────────────────┐
+                    │      HUB CLUSTER    │
+                    │  (RHACM + MultiKueue)│
+                    └──────────┬──────────┘
+                               │
+              ┌────────────────┴────────────────┐
+              │                                 │
+              ▼                                 ▼
+    ┌─────────────────────┐         ┌─────────────────────┐
+    │   spoke-cluster1    │         │   spoke-cluster2    │
+    │   ╔═══════════════╗ │         │                     │
+    │   ║  NVIDIA L4    ║ │         │   CPU Only          │
+    │   ║  GPU x4       ║ │         │   (No GPU)          │
+    │   ╚═══════════════╝ │         │                     │
+    │   accelerator:      │         │   cluster-type:     │
+    │     nvidia-l4       │         │     cpu-only        │
+    └─────────────────────┘         └─────────────────────┘
+```
+
+> **Note:** The scenarios demonstrate how Placement selects the right cluster based on workload requirements (GPU vs CPU).
 
 ## How It Works
 
@@ -129,9 +169,28 @@ GPUaaS-RHACM/
 - [RHACM Kueue Add-on (upstream)](https://github.com/open-cluster-management-io/addon-contrib/tree/main/kueue-addon)
 - [OCM MultiKueue Integration](https://github.com/open-cluster-management-io/ocm/pull/1165)
 
+## ⚠️ Important: Known Issue & Workaround
+
+There is a known issue where the RHACM kueue-addon incorrectly deploys hub's ClusterQueue configuration (with admission checks) to spoke clusters. **Spoke clusters should NOT have admission checks.**
+
+**Workaround:** After deploying any scenario, run:
+
+```bash
+./scripts/fix-spoke-clusterqueues.sh
+```
+
+See [Troubleshooting](docs/99-troubleshooting.md) for details.
+
 ## Status
 
 This feature is in **Developer Preview** in RHACM 2.15.
+
+### Tested Environment
+
+- **RHACM:** 2.15
+- **OpenShift:** 4.18
+- **Kueue Operator:** 1.2.x
+- **GPU:** NVIDIA L4
 
 ## License
 

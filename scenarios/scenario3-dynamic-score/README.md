@@ -1,4 +1,11 @@
-# Demo Scenario 3: Dynamic Score-Based Cluster Selection
+---
+layout: default
+title: "Scenario 3: Dynamic Score"
+parent: Demo Scenarios
+nav_order: 3
+description: "Real-time GPU availability"
+---
+
 
 > **Difficulty:** ⭐⭐⭐ Advanced | **Time:** ~20 minutes
 

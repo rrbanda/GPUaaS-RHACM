@@ -1,4 +1,11 @@
-# Demo Scenario 2: Label-Based Cluster Selection
+---
+layout: default
+title: "Scenario 2: Label-Based"
+parent: Demo Scenarios
+nav_order: 2
+description: "Target specific GPU types"
+---
+
 
 > **Difficulty:** ⭐⭐ Intermediate | **Time:** ~15 minutes
 

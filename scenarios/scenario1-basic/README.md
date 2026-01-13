@@ -1,4 +1,11 @@
-# Demo Scenario 1: Basic MultiKueue Setup
+---
+layout: default
+title: "Scenario 1: Basic"
+parent: Demo Scenarios
+nav_order: 1
+description: "Dispatch jobs to all managed clusters"
+---
+
 
 > **Difficulty:** ⭐ Beginner | **Time:** ~10 minutes
 

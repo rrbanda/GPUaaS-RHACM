@@ -1,4 +1,10 @@
-# Installation Guide
+---
+layout: default
+title: Installation
+nav_order: 5
+description: "Step-by-step setup guide"
+---
+
 
 ## Overview
 

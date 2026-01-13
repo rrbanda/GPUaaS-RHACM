@@ -1,4 +1,10 @@
-# Troubleshooting Guide
+---
+layout: default
+title: Troubleshooting
+nav_order: 9
+description: "Known issues and fixes"
+---
+
 
 ## Known Issues and Workarounds
 

@@ -1,19 +1,43 @@
-# GitHub Pages Configuration
+# GitHub Pages Configuration - Just the Docs Theme
 title: GPUaaS with RHACM
 description: GPU-as-a-Service using MultiKueue and Red Hat Advanced Cluster Management
-theme: jekyll-theme-minimal
+
+# Use Just the Docs theme (best for documentation)
+remote_theme: just-the-docs/just-the-docs
 
 # Repository info
 repository: rrbanda/GPUaaS-RHACM
+gh_edit_link: true
+gh_edit_link_text: "Edit this page on GitHub"
+gh_edit_repository: "https://github.com/rrbanda/GPUaaS-RHACM"
+gh_edit_branch: "main"
 
-# Navigation
-header_pages:
-  - docs/concepts.md
-  - docs/00-prerequisites.md
-  - docs/01-architecture.md
-  - docs/02-installation.md
+# Color scheme
+color_scheme: dark
+
+# Aux links (top right)
+aux_links:
+  "GitHub":
+    - "https://github.com/rrbanda/GPUaaS-RHACM"
+
+# Enable copy button on code blocks
+enable_copy_code_button: true
+
+# Footer
+footer_content: "GPUaaS-RHACM - Developer Preview in RHACM 2.15"
+
+# Back to top
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Search
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
 
 # Exclude from build
 exclude:
   - LICENSE
   - scripts/
+  - "*.sh"
