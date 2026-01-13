@@ -3,262 +3,321 @@
 import { motion } from 'framer-motion';
 import { theme } from './shared/theme';
 
-// Reusing components from Slide2 but with additions
-
-const AddonIcon = ({ size = 32 }: { size?: number }) => (
-  <div className="flex flex-col items-center">
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <path 
-        d="M6 10h6v-3c0-1.5 1.2-2.5 2.5-2.5s2.5 1 2.5 2.5v3h6c1.4 0 2.5 1.1 2.5 2.5v6h3c1.5 0 2.5 1.2 2.5 2.5s-1 2.5-2.5 2.5h-3v6c0 1.4-1.1 2.5-2.5 2.5h-6v-3c0-1.5-1.2-2.5-2.5-2.5s-2.5 1-2.5 2.5v3H6c-1.4 0-2.5-1.1-2.5-2.5v-6h3c1.5 0 2.5-1.2 2.5-2.5s-1-2.5-2.5-2.5h-3v-6c0-1.4 1.1-2.5 2.5-2.5z" 
-        fill={theme.gray300}
-        stroke={theme.gray400}
-        strokeWidth="1"
-      />
-    </svg>
-    <span className="text-[7px] px-1 py-0.5 rounded bg-red-600 text-white font-medium mt-0.5">ADD-ON</span>
-  </div>
+// Animated orbit ring
+const OrbitRing = ({ 
+  radius, 
+  duration, 
+  delay,
+  color 
+}: { 
+  radius: number; 
+  duration: number; 
+  delay: number;
+  color: string;
+}) => (
+  <motion.div
+    className="absolute rounded-full"
+    style={{
+      width: radius * 2,
+      height: radius * 2,
+      border: `1px solid ${color}`,
+      left: '50%',
+      top: '50%',
+      transform: 'translate(-50%, -50%)',
+    }}
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ 
+      opacity: [0.1, 0.3, 0.1],
+      rotate: 360,
+    }}
+    transition={{
+      opacity: { duration: 4, repeat: Infinity, delay },
+      rotate: { duration, repeat: Infinity, ease: 'linear', delay },
+    }}
+  />
 );
 
-// Kueue Pinwheel icon
-const KueuePinwheel = ({ size = 28, color = 'green' }: { size?: number; color?: 'green' | 'blue' | 'gold' }) => {
-  const colors = {
-    green: ['#22C55E', '#4ADE80', '#16A34A', '#15803D'],
-    blue: ['#3B82F6', '#60A5FA', '#2563EB', '#1D4ED8'],
-    gold: ['#F59E0B', '#FBBF24', '#D97706', '#B45309'],
-  };
-  const c = colors[color];
-  
-  return (
-    <motion.svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 28 28" 
-      fill="none"
-      animate={{ rotate: 360 }}
-      transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-    >
-      <path d="M14 2 L18 14 L14 14 Z" fill={c[0]}/>
-      <path d="M26 14 L14 18 L14 14 Z" fill={c[1]}/>
-      <path d="M14 26 L10 14 L14 14 Z" fill={c[2]}/>
-      <path d="M2 14 L14 10 L14 14 Z" fill={c[3]}/>
-      <circle cx="14" cy="14" r="3" fill="white" stroke={c[0]} strokeWidth="1"/>
-    </motion.svg>
-  );
-};
-
-const RHBoKBadge = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => (
-  <div 
-    className={`flex items-center justify-center rounded-lg ${size === 'sm' ? 'w-8 h-8' : 'w-10 h-10'}`}
-    style={{ background: `linear-gradient(135deg, ${theme.redHatRed}, ${theme.redHatRedDark})` }}
+// Central logo
+const CentralLogo = () => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.5 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.6, type: 'spring' }}
+    className="relative z-20"
   >
-    <span className={`text-white font-bold ${size === 'sm' ? 'text-[6px]' : 'text-[8px]'}`}>RHBoK</span>
-  </div>
+    <div 
+      className="absolute inset-0 rounded-3xl"
+      style={{ 
+        background: `radial-gradient(circle, ${theme.redHatRedGlow} 0%, transparent 70%)`,
+        filter: 'blur(30px)',
+        transform: 'scale(1.5)',
+      }}
+    />
+    <div 
+      className="relative w-32 h-32 rounded-3xl flex items-center justify-center"
+      style={{ 
+        background: `linear-gradient(135deg, ${theme.redHatRed} 0%, ${theme.redHatRedDark} 100%)`,
+        boxShadow: `0 8px 40px ${theme.redHatRedGlow}`,
+      }}
+    >
+      <span className="text-white text-4xl font-bold">AI</span>
+    </div>
+  </motion.div>
 );
 
-const HubAdminIcon = () => (
-  <div className="flex flex-col items-center">
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-      <circle cx="22" cy="12" r="7" fill="#FEEBC8" stroke="#92400E" strokeWidth="1"/>
-      <rect x="17" y="10" width="4" height="3" rx="1" stroke="#1F2937" strokeWidth="1" fill="none"/>
-      <rect x="23" y="10" width="4" height="3" rx="1" stroke="#1F2937" strokeWidth="1" fill="none"/>
-      <line x1="21" y1="11.5" x2="23" y2="11.5" stroke="#1F2937" strokeWidth="1"/>
-      <path d="M10 40 L12 25 Q22 20 32 25 L34 40" fill={theme.redHatRed}/>
-    </svg>
-    <span className="text-[9px] text-gray-400">Hub Admin</span>
-  </div>
-);
-
-const ClusterIcon = ({ variant = 'cpu', disabled = false }: { variant?: 'cpu' | 'gpu' | 'gold'; disabled?: boolean }) => {
-  const colors = {
-    cpu: '#94A3B8',
-    gpu: '#34D399', 
-    gold: '#FBBF24',
-  };
+// Orbiting feature
+const OrbitingFeature = ({
+  icon,
+  label,
+  angle,
+  radius,
+  delay,
+  color,
+}: {
+  icon: string;
+  label: string;
+  angle: number;
+  radius: number;
+  delay: number;
+  color: string;
+}) => {
+  const x = Math.cos((angle * Math.PI) / 180) * radius;
+  const y = Math.sin((angle * Math.PI) / 180) * radius;
   
   return (
-    <div className={`flex flex-col gap-0.5 ${disabled ? 'opacity-30' : ''}`}>
-      {[0,1,2,3].map(i => (
-        <div key={i} className="flex gap-0.5">
-          {[0,1,2,3].map(j => (
-            <div 
-              key={j} 
-              className="w-3 h-2 rounded-sm"
-              style={{ 
-                backgroundColor: variant === 'gold' ? '#FEF3C7' : variant === 'gpu' ? '#D1FAE5' : '#E2E8F0',
-                border: `1px solid ${colors[variant]}`
-              }}
-            />
-          ))}
-        </div>
-      ))}
-      {variant !== 'cpu' && (
-        <div className="flex gap-0.5 mt-0.5">
-          {[0,1,2,3].map(j => (
-            <div 
-              key={j} 
-              className="w-3 h-1.5 rounded-sm"
-              style={{ backgroundColor: variant === 'gold' ? '#FBBF24' : '#6B7280' }}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    <motion.div
+      className="absolute z-10"
+      style={{
+        left: `calc(50% + ${x}px - 32px)`,
+        top: `calc(50% + ${y}px - 32px)`,
+      }}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay, duration: 0.5, type: 'spring' }}
+    >
+      <motion.div
+        className="w-16 h-16 rounded-2xl flex items-center justify-center relative group cursor-pointer"
+        style={{ 
+          background: theme.backgroundCard,
+          border: `1px solid ${color}40`,
+        }}
+        whileHover={{ scale: 1.1, borderColor: color }}
+      >
+        <div 
+          className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ 
+            background: `radial-gradient(circle, ${color}30 0%, transparent 70%)`,
+          }}
+        />
+        <span className="text-2xl relative z-10">{icon}</span>
+        
+        {/* Label tooltip */}
+        <motion.div
+          className="absolute top-full mt-2 whitespace-nowrap px-2 py-1 rounded-lg text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ 
+            background: theme.backgroundElevated,
+            color: theme.textPrimary,
+            border: `1px solid ${theme.glassBorder}`,
+          }}
+        >
+          {label}
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 };
 
-const ClusterLabel = ({ name, hasRHBoK = false }: { name: string; hasRHBoK?: boolean }) => (
-  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-red-600/50 bg-gray-900/60">
-    {hasRHBoK && <RHBoKBadge size="sm" />}
-    <span className="text-white text-[10px] font-medium">{name}</span>
-    {hasRHBoK && (
-      <div className="w-4 h-4 rounded bg-gray-700 flex items-center justify-center">
-        <KueuePinwheel size={12} color="green" />
+// Feature card
+const FeatureCard = ({
+  title,
+  description,
+  icon,
+  color,
+  delay,
+}: {
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  delay: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    className="p-5 rounded-xl relative overflow-hidden group"
+    style={{ 
+      background: theme.backgroundCard,
+      border: `1px solid ${theme.glassBorder}`,
+    }}
+  >
+    <motion.div
+      className="absolute inset-0"
+      style={{ 
+        background: `linear-gradient(135deg, ${color}10 0%, transparent 50%)`,
+      }}
+      initial={{ opacity: 0 }}
+      whileHover={{ opacity: 1 }}
+    />
+    <div className="relative z-10">
+      <div className="flex items-center gap-3 mb-3">
+        <div 
+          className="w-10 h-10 rounded-lg flex items-center justify-center"
+          style={{ background: `${color}20` }}
+        >
+          <span className="text-xl">{icon}</span>
+        </div>
+        <h3 className="font-semibold text-lg" style={{ color: theme.white }}>
+          {title}
+        </h3>
       </div>
-    )}
-  </div>
+      <p className="text-sm leading-relaxed" style={{ color: theme.textMuted }}>
+        {description}
+      </p>
+    </div>
+  </motion.div>
 );
 
 export default function Slide3() {
+  const features = [
+    { icon: '📓', label: 'Notebooks', angle: 0, color: theme.amber },
+    { icon: '🧪', label: 'Experiments', angle: 45, color: theme.purpleLight },
+    { icon: '📊', label: 'Pipelines', angle: 90, color: theme.cyan },
+    { icon: '🚀', label: 'Model Serving', angle: 135, color: theme.gpuGreen },
+    { icon: '📦', label: 'Model Registry', angle: 180, color: theme.redHatRed },
+    { icon: '🔧', label: 'Tuning', angle: 225, color: theme.amber },
+    { icon: '🤖', label: 'Agents', angle: 270, color: theme.purpleLight },
+    { icon: '🦙', label: 'LlamaStack', angle: 315, color: theme.magenta },
+  ];
+
   return (
     <div 
-      className="w-full h-full flex flex-col p-4 relative overflow-hidden"
-      style={{ 
-        backgroundColor: theme.background,
-        backgroundImage: `radial-gradient(ellipse at top right, ${theme.purple}15 0%, transparent 50%),
-                          radial-gradient(ellipse at bottom left, ${theme.redHatRed}10 0%, transparent 50%)`
-      }}
+      className="w-full h-full flex p-8 gap-8 relative overflow-hidden"
+      style={{ background: theme.background }}
     >
-      {/* Hub Cluster Box - leave room for Hub Admin on right */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="ml-4 mr-16 relative"
-      >
-        {/* Hub header */}
-        <div 
-          className="flex items-center gap-2 px-3 py-1.5 rounded-t-lg border-2 border-b-0"
-          style={{ borderColor: theme.redHatRed, backgroundColor: theme.backgroundCard }}
-        >
-          <RHBoKBadge size="md" />
-          <span className="text-red-400 font-semibold text-sm">RHACM Hub Cluster</span>
-          <span className="text-gray-500 text-sm">+</span>
-          <span className="text-purple-400 font-semibold text-sm">MultiKueue Addon</span>
-          <span className="text-gray-500 text-sm">=</span>
-          <span className="text-cyan-400 font-medium text-sm">Kueue Manager Cluster</span>
-        </div>
+      {/* Background grid */}
+      <div 
+        className="absolute inset-0 opacity-5"
+        style={{
+          backgroundImage: `
+            linear-gradient(${theme.white}10 1px, transparent 1px),
+            linear-gradient(90deg, ${theme.white}10 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+        }}
+      />
 
-        {/* Hub content */}
-        <div 
-          className="p-3 rounded-b-lg border-2 border-t-0 space-y-2"
-          style={{ borderColor: theme.redHatRed, backgroundColor: theme.backgroundLight }}
-        >
-          {/* Placements row */}
-          <div className="flex gap-2 justify-center">
-            <div className="px-3 py-1 rounded-md text-white text-xs font-medium" style={{ backgroundColor: theme.gpuGreen }}>
-              GPUPlacement
-            </div>
-            <div className="px-3 py-1 rounded-md text-white text-xs font-medium" style={{ backgroundColor: theme.cpuBlue }}>
-              CPUPlacement
-            </div>
-            <div className="px-3 py-1 rounded-md text-white text-xs font-medium" style={{ backgroundColor: theme.goldAmber }}>
-              GoldClassPlacement
-            </div>
-          </div>
-
-          {/* RHACM Admission Check Controller with Kueue integration */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex items-center gap-3 p-2 rounded-lg border border-gray-700 bg-gray-800/50"
-          >
-            <AddonIcon size={28} />
-            <div className="flex-1">
-              <div className="text-white text-xs font-medium">RHACM Admission Check Controller</div>
-              <div className="text-gray-500 text-[10px]">(Addon supplied)</div>
-            </div>
-            <KueuePinwheel size={24} color="green" />
-            <motion.div 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
-              className="text-white text-xs font-medium bg-green-700/40 px-2 py-1 rounded"
-            >
-              Create Kueue workload dispatching from Placement
-            </motion.div>
-          </motion.div>
-
-          {/* Queue configurations - highlighted */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="flex gap-2 justify-center"
-          >
-            {/* GPU Queue */}
-            <div className="px-3 py-2 rounded-lg bg-red-600/20 border border-red-500">
-              <div className="text-[10px] text-gray-400">Kueue: <span className="text-red-300">GPULocalQueue</span></div>
-              <div className="text-[10px] text-gray-400">MultiKueue: <span className="text-red-300">GPUClusterQueue</span></div>
-            </div>
-            {/* CPU Queue */}
-            <div className="px-3 py-2 rounded-lg bg-blue-600/20 border border-blue-500">
-              <div className="text-[10px] text-gray-400">Kueue: <span className="text-blue-300">CPULocalQueue</span></div>
-              <div className="text-[10px] text-gray-400">MultiKueue: <span className="text-blue-300">CPUClusterQueue</span></div>
-            </div>
-            {/* Gold Queue */}
-            <div className="px-3 py-2 rounded-lg bg-amber-600/20 border border-amber-500">
-              <div className="text-[10px] text-gray-400">Kueue: <span className="text-amber-300">GoldGPULocalQueue</span></div>
-              <div className="text-[10px] text-gray-400">MultiKueue: <span className="text-amber-300">GoldGPUClusterQueue</span></div>
-            </div>
-          </motion.div>
-
-          {/* Kueue Admission Check Controller */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="flex items-center justify-center gap-3 p-2 rounded-lg border border-purple-700 bg-purple-900/30"
-          >
-            <AddonIcon size={28} />
-            <div className="text-white text-xs font-medium">Kueue Admission Check Controller</div>
-          </motion.div>
-        </div>
-      </motion.div>
-
-      {/* Hub Admin - positioned outside the hub cluster box */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="absolute top-4 right-2 z-10"
-      >
-        <HubAdminIcon />
-      </motion.div>
-
-      {/* Worker Clusters */}
-      <div className="flex justify-center items-end gap-3 mt-auto pb-3">
-        {[
-          { name: 'Cheap CPUs', variant: 'cpu' as const, hasRHBoK: true },
-          { name: 'Workhorse GPUs', variant: 'gpu' as const, hasRHBoK: true },
-          { name: 'Mixed', variant: 'cpu' as const, hasRHBoK: true },
-          { name: 'Test Cluster No Use', variant: 'gpu' as const, hasRHBoK: false, disabled: true },
-          { name: 'Creme of the crop', variant: 'gold' as const, hasRHBoK: true },
-        ].map((cluster, i) => (
-          <motion.div
-            key={cluster.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 + i * 0.1 }}
-            className="flex flex-col items-center gap-1.5 relative"
-          >
-            <ClusterIcon variant={cluster.variant} disabled={cluster.disabled} />
-            {cluster.disabled && (
-              <div className="absolute top-2 text-red-500 text-xl font-bold">✕</div>
-            )}
-            <ClusterLabel name={cluster.name} hasRHBoK={cluster.hasRHBoK && !cluster.disabled} />
-          </motion.div>
+      {/* Left: Visual */}
+      <div className="w-1/2 flex items-center justify-center relative">
+        {/* Orbit rings */}
+        <OrbitRing radius={100} duration={30} delay={0} color={theme.redHatRed + '40'} />
+        <OrbitRing radius={160} duration={40} delay={0.5} color={theme.purpleLight + '30'} />
+        <OrbitRing radius={220} duration={50} delay={1} color={theme.cyan + '20'} />
+        
+        {/* Central logo */}
+        <CentralLogo />
+        
+        {/* Orbiting features */}
+        {features.map((f, i) => (
+          <OrbitingFeature
+            key={f.label}
+            icon={f.icon}
+            label={f.label}
+            angle={f.angle}
+            radius={160}
+            delay={0.3 + i * 0.1}
+            color={f.color}
+          />
         ))}
       </div>
 
+      {/* Right: Content */}
+      <div className="w-1/2 flex flex-col justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <div 
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4"
+            style={{ 
+              background: `${theme.redHatRed}15`,
+              border: `1px solid ${theme.redHatRed}30`,
+            }}
+          >
+            <span style={{ color: theme.redHatRedLight }} className="text-xs font-medium uppercase tracking-wider">
+              The Platform
+            </span>
+          </div>
+          <h2 className="text-4xl font-bold mb-3">
+            <span style={{ color: theme.white }}>Red Hat </span>
+            <span 
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: theme.gradientRedPurple }}
+            >
+              OpenShift AI
+            </span>
+          </h2>
+          <p style={{ color: theme.textSecondary }} className="text-lg">
+            Enterprise-ready hybrid AI & MLOps platform for the open hybrid cloud
+          </p>
+        </motion.div>
+
+        {/* Feature cards grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <FeatureCard
+            icon="🧠"
+            title="Train & Tune"
+            description="Jupyter notebooks, experiment tracking, and InstructLab for model customization"
+            color={theme.amber}
+            delay={0.5}
+          />
+          <FeatureCard
+            icon="🚀"
+            title="Serve & Scale"
+            description="KServe & vLLM for high-performance model serving with autoscaling"
+            color={theme.gpuGreen}
+            delay={0.6}
+          />
+          <FeatureCard
+            icon="⚡"
+            title="GPU-as-a-Service"
+            description="Kueue integration for intelligent GPU scheduling and multi-tenancy"
+            color={theme.cyan}
+            delay={0.7}
+          />
+          <FeatureCard
+            icon="🤖"
+            title="Agentic AI"
+            description="LlamaStack APIs, MCP support, and GenAI Studio for building agents"
+            color={theme.purpleLight}
+            delay={0.8}
+          />
+        </div>
+
+        {/* Bottom stats */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="mt-6 flex items-center gap-6"
+        >
+          <div className="text-center">
+            <div className="text-2xl font-bold" style={{ color: theme.gpuGreen }}>90%+</div>
+            <div className="text-xs" style={{ color: theme.textMuted }}>GPU Utilization</div>
+          </div>
+          <div className="w-px h-8" style={{ background: theme.glassBorder }} />
+          <div className="text-center">
+            <div className="text-2xl font-bold" style={{ color: theme.cyan }}>100+</div>
+            <div className="text-xs" style={{ color: theme.textMuted }}>Pre-built Models</div>
+          </div>
+          <div className="w-px h-8" style={{ background: theme.glassBorder }} />
+          <div className="text-center">
+            <div className="text-2xl font-bold" style={{ color: theme.purpleLight }}>3.x</div>
+            <div className="text-xs" style={{ color: theme.textMuted }}>Latest Release</div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

@@ -3,275 +3,345 @@
 import { motion } from 'framer-motion';
 import { theme } from './shared/theme';
 
-// Slide 6: RHOAI Integration - Data Scientists submitting from RHOAI / MCP / ETC
-
-const RHBoKBadge = ({ size = 'md' }: { size?: 'sm' | 'md' }) => (
-  <div 
-    className={`flex items-center justify-center rounded-lg ${size === 'sm' ? 'w-7 h-7' : 'w-9 h-9'}`}
-    style={{ background: `linear-gradient(135deg, ${theme.redHatRed}, ${theme.redHatRedDark})` }}
+// Agent visualization component
+const AgentNode = ({
+  icon,
+  label,
+  isActive,
+  delay,
+  position,
+}: {
+  icon: string;
+  label: string;
+  isActive?: boolean;
+  delay: number;
+  position: { x: number; y: number };
+}) => (
+  <motion.div
+    className="absolute"
+    style={{ left: position.x, top: position.y }}
+    initial={{ opacity: 0, scale: 0 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ delay, type: 'spring', stiffness: 300 }}
   >
-    <span className={`text-white font-bold ${size === 'sm' ? 'text-[6px]' : 'text-[7px]'}`}>RHBoK</span>
-  </div>
-);
-
-const KueuePinwheel = ({ size = 20 }: { size?: number }) => (
-  <motion.svg 
-    width={size} height={size} viewBox="0 0 20 20" fill="none"
-    animate={{ rotate: 360 }}
-    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-  >
-    <path d="M10 2 L12 10 L10 10 Z" fill="#22C55E"/>
-    <path d="M18 10 L10 12 L10 10 Z" fill="#4ADE80"/>
-    <path d="M10 18 L8 10 L10 10 Z" fill="#16A34A"/>
-    <path d="M2 10 L10 8 L10 10 Z" fill="#15803D"/>
-    <circle cx="10" cy="10" r="2" fill="white" stroke="#22C55E" strokeWidth="0.5"/>
-  </motion.svg>
-);
-
-const PersonaIcon = ({ type }: { type: 'admin' | 'scientist' | 'ai-engineer' }) => (
-  <div className="flex flex-col items-center">
-    <svg width="40" height="40" viewBox="0 0 36 36" fill="none">
-      <circle cx="18" cy="10" r="6" fill="#FEEBC8" stroke="#92400E" strokeWidth="0.8"/>
-      {type === 'admin' ? (
-        <>
-          <rect x="14" y="8" width="3" height="2.5" rx="0.5" stroke="#1F2937" strokeWidth="0.6" fill="none"/>
-          <rect x="19" y="8" width="3" height="2.5" rx="0.5" stroke="#1F2937" strokeWidth="0.6" fill="none"/>
-          <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill={theme.redHatRed}/>
-        </>
-      ) : type === 'ai-engineer' ? (
-        <>
-          <path d="M12 8 Q18 4 24 8" stroke="#4A3728" strokeWidth="1.5" fill="none"/>
-          <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill="#A855F7"/>
-        </>
-      ) : (
-        <>
-          <path d="M12 8 Q18 4 24 8" stroke="#4A3728" strokeWidth="1.5" fill="none"/>
-          <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill="#3B82F6"/>
-        </>
-      )}
-    </svg>
-    <span className="text-[10px] text-gray-400">
-      {type === 'admin' ? 'Hub Admin' : type === 'ai-engineer' ? 'AI Engineer' : 'Data Scientist'}
-    </span>
-  </div>
-);
-
-const ClusterBox = ({ name, variant }: { name: string; variant: 'cpu' | 'gpu' | 'gold' }) => {
-  const colors = {
-    cpu: { bg: '#3B82F6', icon: '🖥️' },
-    gpu: { bg: '#22C55E', icon: '🎮' },
-    gold: { bg: '#F59E0B', icon: '✨' },
-  };
-  const c = colors[variant];
-
-  return (
-    <motion.div 
-      className="flex flex-col items-center"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+    <motion.div
+      className="relative"
+      animate={isActive ? { 
+        boxShadow: [
+          `0 0 20px ${theme.purpleGlow}`,
+          `0 0 40px ${theme.purpleGlow}`,
+          `0 0 20px ${theme.purpleGlow}`,
+        ]
+      } : {}}
+      transition={{ duration: 2, repeat: Infinity }}
     >
       <div 
-        className="w-20 h-16 rounded-xl flex flex-col items-center justify-center gap-1"
-        style={{ backgroundColor: `${c.bg}20`, border: `2px solid ${c.bg}` }}
+        className="w-16 h-16 rounded-2xl flex items-center justify-center"
+        style={{
+          background: isActive 
+            ? `linear-gradient(135deg, ${theme.purpleLight}20 0%, ${theme.magenta}20 100%)`
+            : theme.backgroundCard,
+          border: `2px solid ${isActive ? theme.purpleLight : theme.glassBorder}`,
+        }}
       >
-        <span className="text-2xl">{c.icon}</span>
-        <RHBoKBadge size="sm" />
+        <span className="text-2xl">{icon}</span>
       </div>
-      <span className="text-xs text-gray-400 mt-1.5">{name}</span>
+      <div 
+        className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded text-xs font-medium"
+        style={{ 
+          background: theme.backgroundElevated,
+          color: theme.textSecondary,
+        }}
+      >
+        {label}
+      </div>
     </motion.div>
+  </motion.div>
+);
+
+// Connection line
+const ConnectionLine = ({
+  from,
+  to,
+  delay,
+  animated,
+}: {
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+  delay: number;
+  animated?: boolean;
+}) => {
+  const midX = (from.x + to.x) / 2;
+  const midY = (from.y + to.y) / 2;
+  
+  return (
+    <motion.svg
+      className="absolute pointer-events-none"
+      style={{ left: 0, top: 0, width: '100%', height: '100%' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay }}
+    >
+      <defs>
+        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={theme.purpleLight} stopOpacity="0.3" />
+          <stop offset="50%" stopColor={theme.cyan} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={theme.purpleLight} stopOpacity="0.3" />
+        </linearGradient>
+      </defs>
+      <motion.path
+        d={`M ${from.x + 32} ${from.y + 32} Q ${midX} ${midY - 20} ${to.x + 32} ${to.y + 32}`}
+        fill="none"
+        stroke="url(#lineGradient)"
+        strokeWidth="2"
+        strokeDasharray={animated ? "8 4" : "0"}
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ delay: delay + 0.3, duration: 0.8 }}
+      />
+      {animated && (
+        <motion.circle
+          r="4"
+          fill={theme.cyan}
+          style={{ filter: `drop-shadow(0 0 6px ${theme.cyan})` }}
+        >
+          <animateMotion
+            dur="2s"
+            repeatCount="indefinite"
+            path={`M ${from.x + 32} ${from.y + 32} Q ${midX} ${midY - 20} ${to.x + 32} ${to.y + 32}`}
+          />
+        </motion.circle>
+      )}
+    </motion.svg>
   );
 };
 
+// Feature pill
+const FeaturePill = ({
+  text,
+  color,
+  delay,
+}: {
+  text: string;
+  color: string;
+  delay: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.9 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ delay }}
+    className="px-3 py-1.5 rounded-full text-xs font-medium"
+    style={{
+      background: `${color}15`,
+      border: `1px solid ${color}30`,
+      color,
+    }}
+  >
+    {text}
+  </motion.div>
+);
+
 export default function Slide6() {
+  const agentPositions = {
+    user: { x: 50, y: 120 },
+    agent: { x: 180, y: 60 },
+    tool1: { x: 330, y: 30 },
+    tool2: { x: 330, y: 120 },
+    tool3: { x: 330, y: 210 },
+    llm: { x: 180, y: 180 },
+  };
+
   return (
     <div 
-      className="w-full h-full flex flex-col p-4 relative overflow-hidden"
-      style={{ 
-        backgroundColor: theme.background,
-        backgroundImage: `radial-gradient(ellipse at top right, ${theme.purple}12 0%, transparent 50%)`
-      }}
+      className="w-full h-full flex p-8 gap-8 relative overflow-hidden"
+      style={{ background: theme.background }}
     >
-      {/* Title */}
-      <motion.h3
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-center text-white text-base font-semibold mb-3"
-      >
-        Multiple Entry Points to GPU-as-a-Service
-      </motion.h3>
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          className="absolute w-[700px] h-[700px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${theme.purpleGlow} 0%, transparent 60%)`,
+            top: '-20%',
+            left: '20%',
+          }}
+          animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.1, 1] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute w-[400px] h-[400px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${theme.magenta}20 0%, transparent 60%)`,
+            bottom: '10%',
+            right: '-5%',
+          }}
+          animate={{ opacity: [0.1, 0.3, 0.1] }}
+          transition={{ duration: 6, repeat: Infinity, delay: 2 }}
+        />
+      </div>
 
-      {/* Main layout */}
-      <div className="flex-1 flex">
-        {/* Left: Two personas - Data Scientist and AI Engineer */}
-        <div className="w-36 flex flex-col items-center justify-center gap-3">
-          {/* Data Scientist with OpenShift AI */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col items-center"
+      {/* Left: Agent visualization */}
+      <div className="w-1/2 flex flex-col relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <div 
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4"
+            style={{ 
+              background: `${theme.purpleLight}15`,
+              border: `1px solid ${theme.purpleLight}30`,
+            }}
           >
-            <PersonaIcon type="scientist" />
-            <motion.div 
-              className="mt-1.5 px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-900/30"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="text-xs text-blue-300 font-semibold">OpenShift AI</div>
-              <div className="text-[10px] text-gray-400">Jupyter, Pipelines</div>
-            </motion.div>
-          </motion.div>
-
-          {/* AI Engineer with MCP */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col items-center"
-          >
-            <PersonaIcon type="ai-engineer" />
-            <motion.div 
-              className="mt-1.5 px-3 py-1.5 rounded-lg border border-purple-500 bg-purple-900/30"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              <div className="text-xs text-purple-300 font-semibold">MCP Servers</div>
-              <div className="text-[10px] text-gray-400">AI Agents → GPUs</div>
-            </motion.div>
-          </motion.div>
-
-          {/* Arrows */}
-          <motion.svg 
-            width="80" height="60" viewBox="0 0 80 60" className="absolute left-32 top-1/2 -translate-y-1/2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <defs>
-              <marker id="arrow6" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                <path d="M0,0 L8,4 L0,8 Z" fill="#6B7280"/>
-              </marker>
-            </defs>
-            <path d="M0 15 L60 15" stroke="#3B82F6" strokeWidth="2" markerEnd="url(#arrow6)"/>
-            <path d="M0 45 L60 45" stroke="#A855F7" strokeWidth="2" markerEnd="url(#arrow6)"/>
-            <text x="30" y="33" fill="#6B7280" fontSize="8" textAnchor="middle">Jobs</text>
-          </motion.svg>
-        </div>
-
-        {/* Center: Hub Cluster */}
-        <div className="flex-1 flex flex-col ml-14">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 rounded-xl border-2 overflow-hidden flex flex-col"
-            style={{ borderColor: theme.redHatRed }}
-          >
-            {/* Hub Header */}
-            <div 
-              className="flex items-center justify-center gap-3 px-3 py-2"
-              style={{ backgroundColor: theme.backgroundCard }}
-            >
-              <RHBoKBadge />
-              <span className="text-red-400 font-semibold text-sm">RHACM Hub</span>
-              <span className="text-purple-400 text-sm">+ MultiKueue</span>
-            </div>
-
-            {/* Hub Content */}
-            <div 
-              className="flex-1 p-3 flex flex-col justify-between gap-2"
-              style={{ backgroundColor: theme.backgroundLight }}
-            >
-              {/* Placements - LARGER */}
-              <div className="flex gap-2 justify-center">
-                <div className="px-4 py-2 rounded-lg text-white text-sm font-medium bg-green-600">
-                  GPU Placement
-                </div>
-                <div className="px-4 py-2 rounded-lg text-white text-sm font-medium bg-blue-600">
-                  CPU Placement
-                </div>
-                <div className="px-4 py-2 rounded-lg text-white text-sm font-medium bg-amber-600">
-                  Gold Placement
-                </div>
-              </div>
-
-              {/* RHACM Controller */}
-              <div className="flex items-center justify-center gap-3 p-2 rounded-lg border border-gray-600 bg-gray-800/50">
-                <KueuePinwheel size={22} />
-                <span className="text-white text-sm">RHACM Admission Controller</span>
-              </div>
-
-              {/* Queues - LARGER */}
-              <div className="flex gap-3 justify-center">
-                <div className="px-4 py-2.5 rounded-lg bg-green-600/20 border border-green-500">
-                  <div className="text-sm text-green-300">GPU Queues</div>
-                </div>
-                <div className="px-4 py-2.5 rounded-lg bg-blue-600/20 border border-blue-500">
-                  <div className="text-sm text-blue-300">CPU Queues</div>
-                </div>
-                <div className="px-4 py-2.5 rounded-lg bg-amber-600/20 border border-amber-500">
-                  <div className="text-sm text-amber-300">Gold Queues</div>
-                </div>
-              </div>
-
-              {/* Kueue Controller */}
-              <div className="flex items-center justify-center gap-3 p-2 rounded-lg border border-purple-600 bg-purple-900/30">
-                <KueuePinwheel size={22} />
-                <span className="text-white text-sm">Kueue Admission Controller</span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Connection arrows */}
-          <div className="flex justify-center gap-12 py-2">
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#3B82F6" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#22C55E" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#F59E0B" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
+            <span style={{ color: theme.purpleLight }} className="text-xs font-medium uppercase tracking-wider">
+              The Future
+            </span>
           </div>
+          <h2 className="text-4xl font-bold mb-2">
+            <span 
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: theme.gradientPurpleCyan }}
+            >
+              Agentic AI
+            </span>
+            <span style={{ color: theme.white }}> Workloads</span>
+          </h2>
+          <p style={{ color: theme.textMuted }} className="text-lg">
+            AI agents are the next wave of enterprise AI — and they need GPUs
+          </p>
+        </motion.div>
 
-          {/* Worker clusters */}
-          <motion.div 
-            className="flex justify-center gap-10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-          >
-            <ClusterBox name="CPU Workers" variant="cpu" />
-            <ClusterBox name="GPU Workers" variant="gpu" />
-            <ClusterBox name="Gold GPUs" variant="gold" />
-          </motion.div>
+        {/* Agent flow visualization */}
+        <div className="relative flex-1 min-h-[300px]">
+          {/* Connection lines */}
+          <ConnectionLine from={agentPositions.user} to={agentPositions.agent} delay={0.5} animated />
+          <ConnectionLine from={agentPositions.agent} to={agentPositions.tool1} delay={0.7} />
+          <ConnectionLine from={agentPositions.agent} to={agentPositions.tool2} delay={0.8} />
+          <ConnectionLine from={agentPositions.agent} to={agentPositions.tool3} delay={0.9} />
+          <ConnectionLine from={agentPositions.agent} to={agentPositions.llm} delay={1.0} animated />
+          
+          {/* Agent nodes */}
+          <AgentNode icon="👤" label="User" position={agentPositions.user} delay={0.3} />
+          <AgentNode icon="🤖" label="Agent" position={agentPositions.agent} delay={0.4} isActive />
+          <AgentNode icon="🔧" label="Tool: DB" position={agentPositions.tool1} delay={0.6} />
+          <AgentNode icon="🌐" label="Tool: API" position={agentPositions.tool2} delay={0.7} />
+          <AgentNode icon="📁" label="Tool: RAG" position={agentPositions.tool3} delay={0.8} />
+          <AgentNode icon="🧠" label="LLM (GPU)" position={agentPositions.llm} delay={0.9} isActive />
         </div>
 
-        {/* Right: Hub Admin */}
-        <div className="w-24 flex flex-col items-center justify-start pt-8">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+        {/* Bottom insight */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="p-4 rounded-xl"
+          style={{
+            background: `linear-gradient(135deg, ${theme.purpleLight}10 0%, transparent 100%)`,
+            border: `1px solid ${theme.purpleLight}20`,
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">💡</span>
+            <p style={{ color: theme.textSecondary }} className="text-sm">
+              Every agent interaction requires <span style={{ color: theme.gpuGreen }} className="font-semibold">LLM inference</span> — 
+              making agents <span style={{ color: theme.amber }} className="font-semibold">GPU workloads</span> at their core
+            </p>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Right: Details */}
+      <div className="w-1/2 flex flex-col justify-center gap-6 relative z-10">
+        {/* What are agents */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5 }}
+          className="p-6 rounded-2xl"
+          style={{
+            background: theme.backgroundCard,
+            border: `1px solid ${theme.glassBorder}`,
+          }}
+        >
+          <h3 className="text-xl font-semibold mb-3" style={{ color: theme.white }}>
+            What are AI Agents?
+          </h3>
+          <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+            Autonomous AI systems that can reason, plan, and take actions using tools to accomplish complex tasks.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <FeaturePill text="Multi-step Reasoning" color={theme.purpleLight} delay={0.7} />
+            <FeaturePill text="Tool Calling" color={theme.cyan} delay={0.8} />
+            <FeaturePill text="Memory & Context" color={theme.amber} delay={0.9} />
+            <FeaturePill text="Autonomous Execution" color={theme.gpuGreen} delay={1.0} />
+          </div>
+        </motion.div>
+
+        {/* Why agents need GPUs */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.8 }}
+          className="p-6 rounded-2xl"
+          style={{
+            background: theme.backgroundCard,
+            border: `1px solid ${theme.glassBorder}`,
+          }}
+        >
+          <h3 className="text-xl font-semibold mb-4" style={{ color: theme.white }}>
+            Why Agents Need GPU-as-a-Service
+          </h3>
+          <div className="space-y-3">
+            {[
+              { icon: '🔄', text: 'Multiple LLM calls per request (5-20+ typically)', color: theme.purpleLight },
+              { icon: '⚡', text: 'Low latency required for interactive use', color: theme.cyan },
+              { icon: '📈', text: 'Unpredictable, bursty demand patterns', color: theme.amber },
+              { icon: '🔐', text: 'Enterprise data requires private inference', color: theme.redHatRed },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.0 + i * 0.1 }}
+                className="flex items-center gap-3 p-2 rounded-lg"
+                style={{ background: `${item.color}08` }}
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span className="text-sm" style={{ color: theme.textSecondary }}>
+                  {item.text}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* AI Engineer persona callout */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3 }}
+          className="flex items-center gap-4 p-4 rounded-xl"
+          style={{
+            background: `linear-gradient(135deg, ${theme.purpleLight}15 0%, ${theme.magenta}10 100%)`,
+            border: `1px solid ${theme.purpleLight}30`,
+          }}
+        >
+          <div 
+            className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: `${theme.purpleLight}20` }}
           >
-            <PersonaIcon type="admin" />
-            <div className="mt-2 text-xs text-gray-500 text-center">
-              Creates<br/>Placements
-            </div>
-          </motion.div>
-        </div>
+            <span className="text-3xl">🤖</span>
+          </div>
+          <div>
+            <h4 className="font-semibold" style={{ color: theme.purpleLight }}>
+              AI Engineer Persona
+            </h4>
+            <p className="text-sm" style={{ color: theme.textMuted }}>
+              New persona in OpenShift AI focused on building agents & AI applications
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -3,259 +3,352 @@
 import { motion } from 'framer-motion';
 import { theme } from './shared/theme';
 
-// Slide 8: Complete architecture - clean, organized view
-
-const RHBoKBadge = ({ size = 'md' }: { size?: 'sm' | 'md' }) => (
-  <div 
-    className={`flex items-center justify-center rounded-lg ${size === 'sm' ? 'w-7 h-7' : 'w-9 h-9'}`}
-    style={{ background: `linear-gradient(135deg, ${theme.redHatRed}, ${theme.redHatRedDark})` }}
-  >
-    <span className={`text-white font-bold ${size === 'sm' ? 'text-[6px]' : 'text-[7px]'}`}>RHBoK</span>
-  </div>
-);
-
-const KueuePinwheel = ({ size = 20 }: { size?: number }) => (
-  <motion.svg 
-    width={size} height={size} viewBox="0 0 20 20" fill="none"
-    animate={{ rotate: 360 }}
-    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-  >
-    <path d="M10 2 L12 10 L10 10 Z" fill="#22C55E"/>
-    <path d="M18 10 L10 12 L10 10 Z" fill="#4ADE80"/>
-    <path d="M10 18 L8 10 L10 10 Z" fill="#16A34A"/>
-    <path d="M2 10 L10 8 L10 10 Z" fill="#15803D"/>
-    <circle cx="10" cy="10" r="2" fill="white" stroke="#22C55E" strokeWidth="0.5"/>
-  </motion.svg>
-);
-
-const PersonaIcon = ({ type }: { type: 'admin' | 'scientist' }) => (
-  <div className="flex flex-col items-center">
-    <svg width="40" height="40" viewBox="0 0 36 36" fill="none">
-      <circle cx="18" cy="10" r="6" fill="#FEEBC8" stroke="#92400E" strokeWidth="0.8"/>
-      {type === 'admin' ? (
-        <>
-          <rect x="14" y="8" width="3" height="2.5" rx="0.5" stroke="#1F2937" strokeWidth="0.6" fill="none"/>
-          <rect x="19" y="8" width="3" height="2.5" rx="0.5" stroke="#1F2937" strokeWidth="0.6" fill="none"/>
-          <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill={theme.redHatRed}/>
-        </>
-      ) : (
-        <>
-          <path d="M12 8 Q18 4 24 8" stroke="#4A3728" strokeWidth="1.5" fill="none"/>
-          <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill="#3B82F6"/>
-        </>
-      )}
-    </svg>
-    <span className="text-[10px] text-gray-400">
-      {type === 'admin' ? 'Hub Admin' : 'Data Scientist'}
-    </span>
-  </div>
-);
-
-const ClusterBox = ({ name, variant }: { name: string; variant: 'cpu' | 'gpu' | 'gold' }) => {
-  const colors = {
-    cpu: { bg: '#3B82F6', icon: '🖥️' },
-    gpu: { bg: '#22C55E', icon: '🎮' },
-    gold: { bg: '#F59E0B', icon: '✨' },
+// Cluster node component
+const ClusterNode = ({
+  label,
+  type,
+  status,
+  gpus,
+  position,
+  delay,
+}: {
+  label: string;
+  type: 'hub' | 'worker';
+  status: 'available' | 'busy' | 'offline';
+  gpus?: number;
+  position: { x: number; y: number };
+  delay: number;
+}) => {
+  const statusColors = {
+    available: theme.gpuGreen,
+    busy: theme.amber,
+    offline: theme.gray500,
   };
-  const c = colors[variant];
-
+  
   return (
-    <motion.div 
-      className="flex flex-col items-center"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+    <motion.div
+      className="absolute"
+      style={{ left: position.x, top: position.y }}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay, type: 'spring' }}
     >
       <div 
-        className="w-20 h-16 rounded-xl flex flex-col items-center justify-center gap-1"
-        style={{ backgroundColor: `${c.bg}20`, border: `2px solid ${c.bg}` }}
+        className="relative p-4 rounded-2xl"
+        style={{
+          background: type === 'hub' 
+            ? `linear-gradient(135deg, ${theme.redHatRed}15 0%, ${theme.backgroundCard} 100%)`
+            : theme.backgroundCard,
+          border: `2px solid ${type === 'hub' ? theme.redHatRed : theme.glassBorder}`,
+          boxShadow: type === 'hub' ? `0 4px 30px ${theme.redHatRedGlow}` : undefined,
+        }}
       >
-        <span className="text-2xl">{c.icon}</span>
-        <RHBoKBadge size="sm" />
+        {/* Status indicator */}
+        <motion.div
+          className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
+          style={{ background: statusColors[status] }}
+          animate={status === 'available' ? { scale: [1, 1.2, 1] } : {}}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xl">{type === 'hub' ? '🏛️' : '🖥️'}</span>
+          <span className="font-semibold text-sm" style={{ color: theme.white }}>
+            {label}
+          </span>
+        </div>
+        
+        {gpus !== undefined && (
+          <div className="flex items-center gap-1">
+            <span className="text-xs" style={{ color: theme.gpuGreen }}>⬢</span>
+            <span className="text-xs" style={{ color: theme.textMuted }}>
+              {gpus} GPUs
+            </span>
+          </div>
+        )}
       </div>
-      <span className="text-xs text-gray-400 mt-1.5">{name}</span>
     </motion.div>
   );
 };
 
+// Pain point card
+const PainPoint = ({
+  icon,
+  title,
+  description,
+  delay,
+}: {
+  icon: string;
+  title: string;
+  description: string;
+  delay: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, x: -30 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay }}
+    className="flex items-start gap-3 p-4 rounded-xl"
+    style={{
+      background: `linear-gradient(135deg, ${theme.redHatRed}08 0%, transparent 100%)`,
+      border: `1px solid ${theme.redHatRed}20`,
+    }}
+  >
+    <div 
+      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+      style={{ background: `${theme.redHatRed}15` }}
+    >
+      <span className="text-xl">{icon}</span>
+    </div>
+    <div>
+      <h4 className="font-semibold mb-1" style={{ color: theme.white }}>
+        {title}
+      </h4>
+      <p className="text-xs" style={{ color: theme.textMuted }}>
+        {description}
+      </p>
+    </div>
+  </motion.div>
+);
+
 export default function Slide8() {
   return (
     <div 
-      className="w-full h-full flex flex-col p-4 relative overflow-hidden"
-      style={{ 
-        backgroundColor: theme.background,
-        backgroundImage: `radial-gradient(ellipse at top right, ${theme.purple}12 0%, transparent 50%)`
-      }}
+      className="w-full h-full flex p-8 gap-8 relative overflow-hidden"
+      style={{ background: theme.background }}
     >
-      {/* Title */}
-      <motion.h3
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-center text-white text-base font-semibold mb-3"
-      >
-        Complete Architecture
-      </motion.h3>
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          className="absolute w-[500px] h-[500px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${theme.redHatRedGlow} 0%, transparent 60%)`,
+            top: '-15%',
+            left: '30%',
+          }}
+          animate={{ opacity: [0.2, 0.35, 0.2] }}
+          transition={{ duration: 6, repeat: Infinity }}
+        />
+      </div>
 
-      {/* Main 3-column layout */}
-      <div className="flex-1 flex">
-        
-        {/* Left: Data Scientist submitting */}
-        <div className="w-28 flex flex-col items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col items-center"
+      {/* Left: Visualization */}
+      <div className="w-1/2 flex flex-col relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <div 
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4"
+            style={{ 
+              background: `${theme.amber}15`,
+              border: `1px solid ${theme.amber}30`,
+            }}
           >
-            <PersonaIcon type="scientist" />
-            <div className="mt-1 text-xs text-gray-500 text-center">
-              Submits<br/>Jobs
-            </div>
-          </motion.div>
-          
-          {/* Arrow */}
-          <motion.svg 
-            width="80" height="30" viewBox="0 0 80 30" className="mt-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <defs>
-              <marker id="arrowhead8" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                <path d="M0,0 L8,4 L0,8 Z" fill="#6B7280"/>
-              </marker>
-            </defs>
-            <path d="M5 15 L65 15" stroke="#6B7280" strokeWidth="2.5" markerEnd="url(#arrowhead8)"/>
-            <text x="35" y="28" fill="#6B7280" fontSize="9" textAnchor="middle">Jobs</text>
-          </motion.svg>
-        </div>
-
-        {/* Center: Hub Cluster */}
-        <div className="flex-1 flex flex-col">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex-1 rounded-xl border-2 overflow-hidden flex flex-col"
-            style={{ borderColor: theme.redHatRed }}
-          >
-            {/* Hub Header */}
-            <div 
-              className="flex items-center justify-center gap-3 px-3 py-2"
-              style={{ backgroundColor: theme.backgroundCard }}
-            >
-              <RHBoKBadge />
-              <span className="text-red-400 font-semibold text-sm">RHACM Hub</span>
-              <span className="text-purple-400 text-sm">+ MultiKueue</span>
-              <span className="text-cyan-400 text-sm">= Manager</span>
-            </div>
-
-            {/* Hub Content */}
-            <div 
-              className="flex-1 p-3 flex flex-col justify-between gap-2"
-              style={{ backgroundColor: theme.backgroundLight }}
-            >
-              {/* Placements - LARGER */}
-              <div className="flex gap-3 justify-center">
-                <div className="px-5 py-2.5 rounded-lg text-white text-sm font-medium bg-green-600">
-                  GPU Placement
-                </div>
-                <div className="px-5 py-2.5 rounded-lg text-white text-sm font-medium bg-blue-600">
-                  CPU Placement
-                </div>
-                <div className="px-5 py-2.5 rounded-lg text-white text-sm font-medium bg-amber-600">
-                  Gold Placement
-                </div>
-              </div>
-
-              {/* RHACM Controller */}
-              <div className="flex items-center justify-center gap-3 p-2.5 rounded-lg border border-gray-600 bg-gray-800/50">
-                <KueuePinwheel size={22} />
-                <span className="text-white text-sm">RHACM Admission Controller</span>
-              </div>
-
-              {/* Queues - LARGER */}
-              <div className="flex gap-4 justify-center">
-                <div className="px-5 py-3 rounded-lg bg-green-600/20 border border-green-500">
-                  <div className="text-sm text-green-300 font-medium">GPU Queues</div>
-                </div>
-                <div className="px-5 py-3 rounded-lg bg-blue-600/20 border border-blue-500">
-                  <div className="text-sm text-blue-300 font-medium">CPU Queues</div>
-                </div>
-                <div className="px-5 py-3 rounded-lg bg-amber-600/20 border border-amber-500">
-                  <div className="text-sm text-amber-300 font-medium">Gold Queues</div>
-                </div>
-              </div>
-
-              {/* Kueue Controller */}
-              <div className="flex items-center justify-center gap-3 p-2.5 rounded-lg border border-purple-600 bg-purple-900/30">
-                <KueuePinwheel size={22} />
-                <span className="text-white text-sm">Kueue Admission Controller</span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Connection arrows */}
-          <div className="flex justify-center gap-16 py-2">
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#3B82F6" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#22C55E" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#F59E0B" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
+            <span style={{ color: theme.amber }} className="text-xs font-medium uppercase tracking-wider">
+              The Challenge
+            </span>
           </div>
+          <h2 className="text-4xl font-bold mb-2">
+            <span style={{ color: theme.white }}>Multi-Cluster </span>
+            <span 
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: theme.gradientRedGold }}
+            >
+              Complexity
+            </span>
+          </h2>
+          <p style={{ color: theme.textMuted }} className="text-lg">
+            Single-cluster Kueue doesn't scale to enterprise multi-cluster environments
+          </p>
+        </motion.div>
 
-          {/* Worker Clusters - MORE SPACING */}
-          <motion.div 
-            className="flex justify-center gap-10"
+        {/* Cluster diagram */}
+        <div className="flex-1 relative min-h-[350px]">
+          {/* Connection lines showing fragmentation */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+            {/* Dashed lines indicating lack of coordination */}
+            <motion.path
+              d="M 160 100 L 60 200"
+              stroke={theme.gray500}
+              strokeWidth="2"
+              strokeDasharray="8 4"
+              fill="none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              transition={{ delay: 0.8 }}
+            />
+            <motion.path
+              d="M 160 100 L 160 200"
+              stroke={theme.gray500}
+              strokeWidth="2"
+              strokeDasharray="8 4"
+              fill="none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              transition={{ delay: 0.9 }}
+            />
+            <motion.path
+              d="M 160 100 L 260 200"
+              stroke={theme.gray500}
+              strokeWidth="2"
+              strokeDasharray="8 4"
+              fill="none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              transition={{ delay: 1.0 }}
+            />
+            <motion.path
+              d="M 160 100 L 360 200"
+              stroke={theme.gray500}
+              strokeWidth="2"
+              strokeDasharray="8 4"
+              fill="none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              transition={{ delay: 1.1 }}
+            />
+          </svg>
+
+          {/* Question marks indicating confusion */}
+          <motion.div
+            className="absolute text-4xl"
+            style={{ left: 90, top: 140, color: theme.amber }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.3, 0.8, 0.3], y: [0, -5, 0] }}
+            transition={{ delay: 1.2, duration: 2, repeat: Infinity }}
+          >
+            ?
+          </motion.div>
+          <motion.div
+            className="absolute text-4xl"
+            style={{ left: 200, top: 130, color: theme.amber }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.3, 0.8, 0.3], y: [0, -5, 0] }}
+            transition={{ delay: 1.4, duration: 2, repeat: Infinity }}
+          >
+            ?
+          </motion.div>
+
+          {/* Clusters */}
+          <ClusterNode
+            label="Manual Management"
+            type="hub"
+            status="busy"
+            position={{ x: 80, y: 20 }}
+            delay={0.3}
+          />
+          <ClusterNode
+            label="Cluster A"
+            type="worker"
+            status="available"
+            gpus={8}
+            position={{ x: 0, y: 180 }}
+            delay={0.5}
+          />
+          <ClusterNode
+            label="Cluster B"
+            type="worker"
+            status="busy"
+            gpus={4}
+            position={{ x: 100, y: 240 }}
+            delay={0.6}
+          />
+          <ClusterNode
+            label="Cluster C"
+            type="worker"
+            status="available"
+            gpus={16}
+            position={{ x: 200, y: 180 }}
+            delay={0.7}
+          />
+          <ClusterNode
+            label="Cluster D"
+            type="worker"
+            status="offline"
+            gpus={8}
+            position={{ x: 300, y: 240 }}
+            delay={0.8}
+          />
+
+          {/* Manual process arrows */}
+          <motion.div
+            className="absolute px-3 py-1.5 rounded-lg text-xs font-medium"
+            style={{ 
+              left: 280, 
+              top: 60,
+              background: `${theme.redHatRed}15`,
+              border: `1px solid ${theme.redHatRed}30`,
+              color: theme.redHatRedLight,
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
+            transition={{ delay: 1.3 }}
           >
-            <ClusterBox name="CPU Workers" variant="cpu" />
-            <ClusterBox name="GPU Workers" variant="gpu" />
-            <ClusterBox name="Gold GPUs" variant="gold" />
+            ❌ No coordination
           </motion.div>
         </div>
+      </div>
 
-        {/* Right: Hub Admin & Data Scientist */}
-        <div className="w-28 flex flex-col items-center justify-start gap-8 pt-6">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <PersonaIcon type="admin" />
-            <div className="mt-1 text-xs text-gray-500 text-center">
-              Creates<br/>Placements
-            </div>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <PersonaIcon type="scientist" />
-            <div className="mt-1 text-xs text-gray-500 text-center">
-              Submits to<br/>Kueues
-            </div>
-          </motion.div>
-        </div>
+      {/* Right: Pain points */}
+      <div className="w-1/2 flex flex-col justify-center gap-4 relative z-10">
+        <motion.h3
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-xl font-semibold mb-2"
+          style={{ color: theme.white }}
+        >
+          Pain Points Without Multi-Cluster Management
+        </motion.h3>
+
+        <PainPoint
+          icon="🔀"
+          title="Manual Job Routing"
+          description="Users must know which cluster to submit jobs to, and manually move jobs between clusters"
+          delay={0.5}
+        />
+        <PainPoint
+          icon="📊"
+          title="Fragmented Visibility"
+          description="No single pane of glass for viewing cluster capacity, GPU availability, or job status"
+          delay={0.6}
+        />
+        <PainPoint
+          icon="⚖️"
+          title="Inconsistent Quotas"
+          description="Each cluster has independent quotas - no way to enforce org-wide resource policies"
+          delay={0.7}
+        />
+        <PainPoint
+          icon="🚫"
+          title="Resource Silos"
+          description="GPUs sit idle in one cluster while jobs queue in another with no automatic rebalancing"
+          delay={0.8}
+        />
+        <PainPoint
+          icon="🔧"
+          title="Operational Overhead"
+          description="Platform teams spend time firefighting instead of building. Each cluster is a snowflake."
+          delay={0.9}
+        />
+
+        {/* Bottom callout */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1 }}
+          className="mt-4 p-4 rounded-xl"
+          style={{
+            background: theme.glassBg,
+            border: `1px solid ${theme.glassBorder}`,
+          }}
+        >
+          <p className="text-sm" style={{ color: theme.textSecondary }}>
+            <span style={{ color: theme.amber }} className="font-semibold">Result:</span>{' '}
+            GPU utilization drops to 30-50% across the fleet, 
+            while data scientists wait for resources
+          </p>
+        </motion.div>
       </div>
     </div>
   );

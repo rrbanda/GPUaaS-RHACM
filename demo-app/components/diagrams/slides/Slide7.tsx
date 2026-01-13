@@ -3,253 +3,378 @@
 import { motion } from 'framer-motion';
 import { theme } from './shared/theme';
 
-// Slide 7: Job Flow Animation - showing how jobs move through the system
-
-const RHBoKBadge = ({ size = 'md' }: { size?: 'sm' | 'md' }) => (
-  <div 
-    className={`flex items-center justify-center rounded-lg ${size === 'sm' ? 'w-7 h-7' : 'w-9 h-9'}`}
-    style={{ background: `linear-gradient(135deg, ${theme.redHatRed}, ${theme.redHatRedDark})` }}
-  >
-    <span className={`text-white font-bold ${size === 'sm' ? 'text-[6px]' : 'text-[7px]'}`}>RHBoK</span>
-  </div>
-);
-
-const KueuePinwheel = ({ size = 20 }: { size?: number }) => (
-  <motion.svg 
-    width={size} height={size} viewBox="0 0 20 20" fill="none"
-    animate={{ rotate: 360 }}
-    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-  >
-    <path d="M10 2 L12 10 L10 10 Z" fill="#22C55E"/>
-    <path d="M18 10 L10 12 L10 10 Z" fill="#4ADE80"/>
-    <path d="M10 18 L8 10 L10 10 Z" fill="#16A34A"/>
-    <path d="M2 10 L10 8 L10 10 Z" fill="#15803D"/>
-    <circle cx="10" cy="10" r="2" fill="white" stroke="#22C55E" strokeWidth="0.5"/>
-  </motion.svg>
-);
-
-const PersonaIcon = ({ type }: { type: 'admin' | 'scientist' }) => (
-  <div className="flex flex-col items-center">
-    <svg width="40" height="40" viewBox="0 0 36 36" fill="none">
-      <circle cx="18" cy="10" r="6" fill="#FEEBC8" stroke="#92400E" strokeWidth="0.8"/>
-      {type === 'admin' ? (
-        <>
-          <rect x="14" y="8" width="3" height="2.5" rx="0.5" stroke="#1F2937" strokeWidth="0.6" fill="none"/>
-          <rect x="19" y="8" width="3" height="2.5" rx="0.5" stroke="#1F2937" strokeWidth="0.6" fill="none"/>
-          <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill={theme.redHatRed}/>
-        </>
-      ) : (
-        <>
-          <path d="M12 8 Q18 4 24 8" stroke="#4A3728" strokeWidth="1.5" fill="none"/>
-          <path d="M9 32 L11 20 Q18 16 25 20 L27 32" fill="#3B82F6"/>
-        </>
-      )}
-    </svg>
-    <span className="text-[10px] text-gray-400">
-      {type === 'admin' ? 'Hub Admin' : 'Data Scientist'}
-    </span>
-  </div>
-);
-
-// Animated job that flows through the system
-const AnimatedJob = ({ delay, color, label }: { delay: number; color: string; label: string }) => (
+// Llama icon component
+const LlamaIcon = ({ size = 80 }: { size?: number }) => (
   <motion.div
-    className="absolute flex items-center gap-1 px-3 py-1.5 rounded-lg z-20"
-    style={{ 
-      backgroundColor: color,
-      boxShadow: `0 0 15px ${color}80`,
-      left: '10%',
-      top: '42%',
-    }}
-    initial={{ opacity: 0, x: 0 }}
-    animate={{ 
-      opacity: [0, 1, 1, 1, 1, 0],
-      x: [0, 120, 240, 360, 450, 520],
-      y: [0, 0, 20, 50, 100, 140],
-    }}
-    transition={{ 
-      delay,
-      duration: 4,
-      repeat: Infinity,
-      repeatDelay: 3,
-      ease: "easeInOut",
-      times: [0, 0.2, 0.4, 0.6, 0.8, 1]
-    }}
+    initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+    transition={{ duration: 0.6, type: 'spring' }}
+    className="relative"
   >
-    <span className="text-white text-sm font-medium">📦 {label}</span>
+    <div 
+      className="absolute inset-0 rounded-3xl"
+      style={{ 
+        background: `radial-gradient(circle, ${theme.magenta}40 0%, transparent 70%)`,
+        filter: 'blur(25px)',
+        transform: 'scale(1.3)',
+      }}
+    />
+    <div 
+      className="relative rounded-3xl flex items-center justify-center"
+      style={{ 
+        width: size, 
+        height: size,
+        background: `linear-gradient(135deg, ${theme.magenta}20 0%, ${theme.purpleLight}20 100%)`,
+        border: `2px solid ${theme.magenta}40`,
+      }}
+    >
+      <span className="text-5xl">🦙</span>
+    </div>
   </motion.div>
 );
 
-const ClusterBox = ({ name, variant }: { name: string; variant: 'cpu' | 'gpu' | 'gold' }) => {
-  const colors = {
-    cpu: { bg: '#3B82F6', icon: '🖥️' },
-    gpu: { bg: '#22C55E', icon: '🎮' },
-    gold: { bg: '#F59E0B', icon: '✨' },
-  };
-  const c = colors[variant];
-
-  return (
-    <motion.div 
-      className="flex flex-col items-center"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <div 
-        className="w-20 h-16 rounded-xl flex flex-col items-center justify-center gap-1"
-        style={{ backgroundColor: `${c.bg}20`, border: `2px solid ${c.bg}` }}
-      >
-        <span className="text-2xl">{c.icon}</span>
-        <RHBoKBadge size="sm" />
+// API layer card
+const APICard = ({
+  icon,
+  title,
+  description,
+  color,
+  delay,
+}: {
+  icon: string;
+  title: string;
+  description: string;
+  color: string;
+  delay: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    className="p-4 rounded-xl relative group"
+    style={{
+      background: theme.backgroundCard,
+      border: `1px solid ${theme.glassBorder}`,
+    }}
+    whileHover={{ borderColor: color, y: -2 }}
+  >
+    <motion.div
+      className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+      style={{ background: `linear-gradient(135deg, ${color}10 0%, transparent 100%)` }}
+    />
+    <div className="relative z-10">
+      <div className="flex items-center gap-3 mb-2">
+        <div 
+          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ background: `${color}15` }}
+        >
+          <span className="text-lg">{icon}</span>
+        </div>
+        <h4 className="font-semibold text-sm" style={{ color: theme.white }}>
+          {title}
+        </h4>
       </div>
-      <span className="text-xs text-gray-400 mt-1.5">{name}</span>
-    </motion.div>
-  );
-};
+      <p className="text-xs" style={{ color: theme.textMuted }}>
+        {description}
+      </p>
+    </div>
+  </motion.div>
+);
+
+// Distribution option
+const DistributionOption = ({
+  icon,
+  label,
+  items,
+  color,
+  delay,
+}: {
+  icon: string;
+  label: string;
+  items: string[];
+  color: string;
+  delay: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay }}
+    className="p-4 rounded-xl"
+    style={{
+      background: `linear-gradient(135deg, ${color}08 0%, transparent 100%)`,
+      border: `1px solid ${color}20`,
+    }}
+  >
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-xl">{icon}</span>
+      <span className="font-semibold text-sm" style={{ color: theme.white }}>
+        {label}
+      </span>
+    </div>
+    <div className="flex flex-wrap gap-1">
+      {items.map((item, i) => (
+        <span
+          key={i}
+          className="text-xs px-2 py-1 rounded"
+          style={{ background: `${color}15`, color: theme.textMuted }}
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  </motion.div>
+);
 
 export default function Slide7() {
+  const apis = [
+    { icon: '🧠', title: 'Inference', description: 'Unified LLM inference across providers', color: theme.magenta },
+    { icon: '📚', title: 'RAG', description: 'Vector stores, embeddings, retrieval', color: theme.cyan },
+    { icon: '🤖', title: 'Agents', description: 'Agent orchestration & memory', color: theme.purpleLight },
+    { icon: '🔧', title: 'Tools', description: 'Tool registration & execution', color: theme.amber },
+    { icon: '🛡️', title: 'Safety', description: 'Content moderation & guardrails', color: theme.redHatRed },
+    { icon: '📊', title: 'Eval', description: 'Benchmarks & evaluations', color: theme.gpuGreen },
+  ];
+
   return (
     <div 
-      className="w-full h-full flex flex-col p-4 relative overflow-hidden"
-      style={{ 
-        backgroundColor: theme.background,
-        backgroundImage: `radial-gradient(ellipse at top right, ${theme.purple}12 0%, transparent 50%)`
-      }}
+      className="w-full h-full flex flex-col p-8 relative overflow-hidden"
+      style={{ background: theme.background }}
     >
-      {/* Title */}
-      <motion.h3
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-center text-white text-base font-semibold mb-3"
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          className="absolute w-[600px] h-[600px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${theme.magenta}20 0%, transparent 60%)`,
+            top: '-15%',
+            right: '-10%',
+          }}
+          animate={{ opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 6, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute w-[500px] h-[500px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${theme.purpleGlow} 0%, transparent 60%)`,
+            bottom: '-10%',
+            left: '10%',
+          }}
+          animate={{ opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 8, repeat: Infinity, delay: 2 }}
+        />
+      </div>
+
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between mb-6 relative z-10"
       >
-        Job Flow Through the System
-      </motion.h3>
-
-      {/* Animated jobs */}
-      <AnimatedJob delay={0} color="#22C55E" label="GPU Job" />
-      <AnimatedJob delay={2} color="#3B82F6" label="CPU Job" />
-      <AnimatedJob delay={4} color="#F59E0B" label="Gold Job" />
-
-      {/* Main layout */}
-      <div className="flex-1 flex">
-        {/* Left: Data Scientist */}
-        <div className="w-24 flex flex-col items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+        <div>
+          <div 
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4"
+            style={{ 
+              background: `${theme.magenta}15`,
+              border: `1px solid ${theme.magenta}30`,
+            }}
           >
-            <PersonaIcon type="scientist" />
-            <div className="mt-1 text-xs text-gray-500 text-center">
-              Submits<br/>Jobs
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Center: Hub + flow */}
-        <div className="flex-1 flex flex-col">
-          {/* Hub cluster */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 rounded-xl border-2 overflow-hidden flex flex-col"
-            style={{ borderColor: theme.redHatRed }}
-          >
-            {/* Hub Header */}
-            <div 
-              className="flex items-center justify-center gap-3 px-3 py-2"
-              style={{ backgroundColor: theme.backgroundCard }}
-            >
-              <RHBoKBadge />
-              <span className="text-red-400 font-semibold text-sm">RHACM Hub</span>
-              <span className="text-purple-400 text-sm">+ MultiKueue</span>
-            </div>
-
-            {/* Flow stages */}
-            <div 
-              className="flex-1 p-3 flex flex-col justify-between gap-2"
-              style={{ backgroundColor: theme.backgroundLight }}
-            >
-              {/* Stage 1: Job arrives */}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white text-sm font-bold shrink-0">1</div>
-                <div className="flex-1 p-2 rounded-lg border border-gray-700 bg-gray-800/50">
-                  <span className="text-sm text-gray-300">Job arrives → LocalQueue</span>
-                </div>
-              </div>
-
-              {/* Stage 2: Admission Check */}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm font-bold shrink-0">2</div>
-                <div className="flex-1 p-2 rounded-lg border border-purple-700 bg-purple-900/30 flex items-center gap-2">
-                  <KueuePinwheel size={18} />
-                  <span className="text-sm text-gray-300">RHACM Controller evaluates Placement</span>
-                </div>
-              </div>
-
-              {/* Stage 3: MultiKueue routes */}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center text-white text-sm font-bold shrink-0">3</div>
-                <div className="flex-1 p-2 rounded-lg border border-cyan-700 bg-cyan-900/30">
-                  <span className="text-sm text-gray-300">MultiKueue routes to best worker cluster</span>
-                </div>
-              </div>
-
-              {/* Stage 4: Dispatch */}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white text-sm font-bold shrink-0">4</div>
-                <div className="flex-1 p-2 rounded-lg border border-amber-700 bg-amber-900/30">
-                  <span className="text-sm text-gray-300">Job dispatched to worker cluster</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Connection arrows */}
-          <div className="flex justify-center gap-12 py-2">
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#3B82F6" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#22C55E" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
-            <motion.svg width="28" height="28" viewBox="0 0 24 24"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-            >
-              <path d="M12 4 L12 16 M8 12 L12 16 L16 12" stroke="#F59E0B" strokeWidth="2.5" fill="none"/>
-            </motion.svg>
+            <span style={{ color: theme.magenta }} className="text-xs font-medium uppercase tracking-wider">
+              Open Source Framework
+            </span>
           </div>
+          <h2 className="text-4xl font-bold">
+            <span 
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: `linear-gradient(135deg, ${theme.magenta} 0%, ${theme.purpleLight} 100%)` }}
+            >
+              LlamaStack
+            </span>
+            <span style={{ color: theme.white }}> in OpenShift AI</span>
+          </h2>
+        </div>
+        <LlamaIcon />
+      </motion.div>
 
-          {/* Worker clusters */}
-          <motion.div 
-            className="flex justify-center gap-10"
+      {/* Main content */}
+      <div className="flex-1 flex gap-8 relative z-10">
+        {/* Left: Dual identity */}
+        <div className="w-2/5 flex flex-col gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-6 rounded-2xl relative overflow-hidden"
+            style={{
+              background: theme.backgroundCard,
+              border: `1px solid ${theme.glassBorder}`,
+            }}
+          >
+            <div 
+              className="absolute top-0 left-0 w-1 h-full"
+              style={{ background: theme.magenta }}
+            />
+            <h3 className="text-xl font-semibold mb-3 pl-4" style={{ color: theme.white }}>
+              Dual Identity
+            </h3>
+            <p className="text-sm pl-4 mb-4" style={{ color: theme.textMuted }}>
+              LlamaStack serves as both the <span style={{ color: theme.magenta }} className="font-semibold">foundation</span> for 
+              building AI applications AND a <span style={{ color: theme.cyan }} className="font-semibold">workload</span> that 
+              runs on GPU-as-a-Service
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3 pl-4">
+              <div 
+                className="p-3 rounded-xl text-center"
+                style={{ background: `${theme.magenta}10`, border: `1px solid ${theme.magenta}25` }}
+              >
+                <span className="text-2xl mb-1 block">🏗️</span>
+                <span className="text-xs font-medium" style={{ color: theme.magenta }}>
+                  Build Agents
+                </span>
+              </div>
+              <div 
+                className="p-3 rounded-xl text-center"
+                style={{ background: `${theme.gpuGreen}10`, border: `1px solid ${theme.gpuGreen}25` }}
+              >
+                <span className="text-2xl mb-1 block">⚡</span>
+                <span className="text-xs font-medium" style={{ color: theme.gpuGreen }}>
+                  GPU Workload
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* MCP Support */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="p-5 rounded-2xl"
+            style={{
+              background: `linear-gradient(135deg, ${theme.cyan}10 0%, ${theme.purpleLight}10 100%)`,
+              border: `1px solid ${theme.cyan}25`,
+            }}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ background: `${theme.cyan}20` }}
+              >
+                <span className="text-xl">🔌</span>
+              </div>
+              <div>
+                <h4 className="font-semibold" style={{ color: theme.white }}>
+                  Model Context Protocol (MCP)
+                </h4>
+                <p className="text-xs" style={{ color: theme.textMuted }}>
+                  Connect models to real-world tools
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {['Databases', 'APIs', 'File Systems', 'Custom Tools'].map((tool, i) => (
+                <span
+                  key={i}
+                  className="text-xs px-2 py-1 rounded"
+                  style={{ background: `${theme.cyan}15`, color: theme.cyan }}
+                >
+                  {tool}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Distributions */}
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.7 }}
+            className="space-y-3"
           >
-            <ClusterBox name="CPU Workers" variant="cpu" />
-            <ClusterBox name="GPU Workers" variant="gpu" />
-            <ClusterBox name="Gold GPUs" variant="gold" />
+            <h4 className="text-sm font-semibold" style={{ color: theme.textSecondary }}>
+              Deployment Options
+            </h4>
+            <div className="space-y-2">
+              <DistributionOption
+                icon="💻"
+                label="Local"
+                items={['Ollama', 'Meta', 'Together']}
+                color={theme.amber}
+                delay={0.8}
+              />
+              <DistributionOption
+                icon="☁️"
+                label="Cloud"
+                items={['AWS Bedrock', 'Fireworks', 'NVIDIA NIM']}
+                color={theme.cyan}
+                delay={0.9}
+              />
+              <DistributionOption
+                icon="🏢"
+                label="Enterprise"
+                items={['OpenShift AI', 'vLLM', 'KServe']}
+                color={theme.redHatRed}
+                delay={1.0}
+              />
+            </div>
           </motion.div>
         </div>
 
-        {/* Right: Hub Admin */}
-        <div className="w-24 flex flex-col items-center justify-start pt-8">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+        {/* Right: API layer */}
+        <div className="flex-1 flex flex-col">
+          <motion.h3
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-xl font-semibold mb-4"
+            style={{ color: theme.white }}
           >
-            <PersonaIcon type="admin" />
-            <div className="mt-1 text-xs text-gray-500 text-center">
-              Creates<br/>Placements
+            Unified API Layer
+          </motion.h3>
+          
+          <div className="grid grid-cols-2 gap-3 flex-1">
+            {apis.map((api, i) => (
+              <APICard
+                key={api.title}
+                icon={api.icon}
+                title={api.title}
+                description={api.description}
+                color={api.color}
+                delay={0.5 + i * 0.1}
+              />
+            ))}
+          </div>
+
+          {/* GenAI Studio callout */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            className="mt-4 p-4 rounded-xl flex items-center gap-4"
+            style={{
+              background: `linear-gradient(135deg, ${theme.purpleLight}10 0%, ${theme.magenta}08 100%)`,
+              border: `1px solid ${theme.purpleLight}30`,
+            }}
+          >
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: `${theme.purpleLight}15` }}
+            >
+              <span className="text-2xl">🎨</span>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold" style={{ color: theme.purpleLight }}>
+                GenAI Studio
+              </h4>
+              <p className="text-sm" style={{ color: theme.textMuted }}>
+                Integrated UI for AI Engineers to discover, consume, and experiment with GenAI assets
+              </p>
+            </div>
+            <div 
+              className="px-3 py-1.5 rounded-lg text-xs font-medium"
+              style={{ background: `${theme.gpuGreen}15`, color: theme.gpuGreen }}
+            >
+              OpenShift AI 3.0
             </div>
           </motion.div>
         </div>

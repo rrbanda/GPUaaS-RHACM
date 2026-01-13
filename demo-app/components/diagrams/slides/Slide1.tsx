@@ -1,210 +1,258 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { theme } from './shared/theme';
+import { theme, animations } from './shared/theme';
 
-// Server rack icon
-const ServerRack = ({ count = 4, variant = 'cpu' }: { count?: number; variant?: 'cpu' | 'gpu' | 'gold' }) => {
-  const colors = {
-    cpu: { bg: '#E2E8F0', accent: '#94A3B8' },
-    gpu: { bg: '#D1FAE5', accent: '#34D399' },
-    gold: { bg: '#FEF3C7', accent: '#F59E0B' },
-  };
-  const c = colors[variant];
-
-  return (
-    <div className="grid grid-cols-4 gap-1.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex flex-col gap-0.5">
-          {/* Server unit */}
-          <div className="w-6 h-4 rounded-sm" style={{ backgroundColor: c.bg, border: `1px solid ${c.accent}` }}>
-            <div className="w-1 h-1 rounded-full bg-green-500 ml-0.5 mt-0.5" />
-          </div>
-          {variant !== 'cpu' && (
-            <div className="w-7 h-3 rounded-sm" style={{ backgroundColor: variant === 'gold' ? '#FBBF24' : '#6B7280', border: `1px solid ${c.accent}` }}>
-              <div className="w-2 h-1 rounded-sm ml-0.5 mt-0.5" style={{ backgroundColor: variant === 'gold' ? '#F59E0B' : '#374151' }} />
-            </div>
-          )}
-        </div>
-      ))}
+// Animated GPU chip component
+const GPUChip = ({ delay = 0, size = 60 }: { delay?: number; size?: number }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+    transition={{ delay, duration: 0.6, ...animations.springBouncy }}
+    className="relative"
+    style={{ width: size, height: size }}
+  >
+    <div 
+      className="absolute inset-0 rounded-lg"
+      style={{ 
+        background: theme.gradientGreenCyan,
+        opacity: 0.2,
+        filter: 'blur(12px)',
+      }}
+    />
+    <div 
+      className="relative w-full h-full rounded-lg border flex items-center justify-center"
+      style={{ 
+        background: theme.backgroundCard,
+        borderColor: theme.gpuGreen,
+      }}
+    >
+      <div className="grid grid-cols-3 gap-0.5 p-2">
+        {[...Array(9)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="w-2 h-2 rounded-sm"
+            style={{ background: theme.gpuGreen }}
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ 
+              delay: delay + i * 0.05,
+              duration: 1.5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
+      </div>
     </div>
-  );
-};
-
-// Cluster label
-const ClusterLabel = ({ name, variant = 'default' }: { name: string; variant?: 'default' | 'blue' | 'green' | 'gold' | 'disabled' }) => {
-  const styles = {
-    default: 'bg-gray-800/80 border-gray-600 text-gray-300',
-    blue: 'bg-blue-900/40 border-blue-500/60 text-blue-200',
-    green: 'bg-green-900/40 border-green-500/60 text-green-200',
-    gold: 'bg-amber-900/40 border-amber-500/60 text-amber-200',
-    disabled: 'bg-gray-900/40 border-gray-600 text-gray-500',
-  };
-
-  return (
-    <div className={`px-4 py-2 rounded-lg border ${styles[variant]} text-sm font-medium backdrop-blur-sm`}>
-      {name}
-    </div>
-  );
-};
-
-// Hub Admin icon
-const HubAdminIcon = () => (
-  <div className="flex flex-col items-center">
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-      {/* Head */}
-      <circle cx="28" cy="16" r="10" fill="#FEEBC8" stroke="#92400E" strokeWidth="1"/>
-      {/* Glasses */}
-      <rect x="21" y="13" width="6" height="4" rx="1" stroke="#1F2937" strokeWidth="1.5" fill="none"/>
-      <rect x="29" y="13" width="6" height="4" rx="1" stroke="#1F2937" strokeWidth="1.5" fill="none"/>
-      <line x1="27" y1="15" x2="29" y2="15" stroke="#1F2937" strokeWidth="1.5"/>
-      {/* Body */}
-      <path d="M14 52 L16 34 Q28 28 40 34 L42 52" fill={theme.redHatRed} stroke={theme.redHatRedDark} strokeWidth="1"/>
-      {/* Collar */}
-      <path d="M24 34 L28 38 L32 34" fill="white"/>
-      {/* Tie */}
-      <path d="M28 38 L26 44 L28 52 L30 44 Z" fill="#1F2937"/>
-    </svg>
-    <span className="text-xs text-gray-400 mt-1 font-medium">Hub Admin</span>
-  </div>
+  </motion.div>
 );
+
+// Floating particle
+const FloatingParticle = ({ index }: { index: number }) => {
+  const colors = [theme.redHatRed, theme.gpuGreen, theme.purpleLight, theme.cyan, theme.amber];
+  const color = colors[index % colors.length];
+  const size = 4 + Math.random() * 6;
+  const startX = Math.random() * 100;
+  const startY = Math.random() * 100;
+  
+  return (
+    <motion.div
+      className="absolute rounded-full"
+      style={{
+        width: size,
+        height: size,
+        background: color,
+        left: `${startX}%`,
+        top: `${startY}%`,
+        boxShadow: `0 0 ${size * 2}px ${color}`,
+      }}
+      animate={{
+        y: [0, -30, 0],
+        x: [0, Math.random() * 20 - 10, 0],
+        opacity: [0.2, 0.6, 0.2],
+      }}
+      transition={{
+        duration: 4 + Math.random() * 3,
+        repeat: Infinity,
+        delay: Math.random() * 2,
+        ease: 'easeInOut',
+      }}
+    />
+  );
+};
 
 export default function Slide1() {
   return (
     <div 
-      className="w-full h-full flex flex-col p-8"
-      style={{ 
-        backgroundColor: theme.background,
-        backgroundImage: `radial-gradient(ellipse at top right, ${theme.purple}15 0%, transparent 50%),
-                          radial-gradient(ellipse at bottom left, ${theme.redHatRed}10 0%, transparent 50%)`
-      }}
+      className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
+      style={{ background: theme.background }}
     >
-      {/* Title area */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
-      >
-        <h2 className="text-2xl font-bold text-white">
-          MultiKueue with <span style={{ color: theme.redHatRed }}>RHACM</span>
-        </h2>
-        <p className="text-gray-400 text-sm mt-1">Infrastructure Overview</p>
-      </motion.div>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-between">
-        {/* Hub Cluster + Admin */}
-        <div className="flex items-start gap-8">
-          {/* RHACM Hub Cluster Box */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="relative"
-          >
-            <div 
-              className="w-[440px] h-[160px] rounded-xl border-2 flex items-center justify-center"
-              style={{ 
-                backgroundColor: theme.backgroundCard,
-                borderColor: theme.redHatRed,
-              }}
-            >
-              <span className="text-gray-500 text-sm">Hub Cluster - Ready for configuration</span>
-            </div>
-            {/* Label */}
-            <div 
-              className="absolute -top-3 left-4 px-3 py-0.5 rounded-full text-sm font-semibold"
-              style={{ backgroundColor: theme.background, color: theme.redHatRed }}
-            >
-              RHACM Hub Cluster
-            </div>
-          </motion.div>
-
-          {/* Hub Admin */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <HubAdminIcon />
-          </motion.div>
-        </div>
-
-        {/* Worker Clusters */}
-        <div className="flex items-end gap-5">
-          {/* Cheap CPUs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col items-center gap-3"
-          >
-            <ServerRack count={16} variant="cpu" />
-            <ClusterLabel name="Cheap CPUs" variant="blue" />
-          </motion.div>
-
-          {/* Workhorse GPUs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-col items-center gap-3"
-          >
-            <ServerRack count={8} variant="gpu" />
-            <ClusterLabel name="Workhorse GPUs" variant="green" />
-          </motion.div>
-
-          {/* Mixed */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="flex flex-col items-center gap-3"
-          >
-            <div className="grid grid-cols-3 gap-1">
-              {[0,1,2,3,4,5].map(i => (
-                <div key={i} className="flex flex-col gap-0.5">
-                  <div className="w-6 h-4 rounded-sm bg-gray-300 border border-gray-400">
-                    <div className="w-1 h-1 rounded-full bg-green-500 ml-0.5 mt-0.5" />
-                  </div>
-                  {i % 2 === 0 && (
-                    <div className="w-7 h-3 rounded-sm bg-gray-500 border border-gray-600" />
-                  )}
-                </div>
-              ))}
-            </div>
-            <ClusterLabel name="Mixed" variant="default" />
-          </motion.div>
-
-          {/* Test Cluster - Disabled */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="flex flex-col items-center gap-3 relative"
-          >
-            <div className="opacity-40">
-              <ServerRack count={8} variant="gpu" />
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-red-500 text-4xl font-bold">✕</span>
-            </div>
-            <ClusterLabel name="Test Cluster No Use" variant="disabled" />
-          </motion.div>
-
-          {/* Creme of the Crop - Gold */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="flex flex-col items-center gap-3"
-          >
-            <ServerRack count={6} variant="gold" />
-            <ClusterLabel name="Creme of the crop" variant="gold" />
-          </motion.div>
-        </div>
+      {/* Animated background gradients */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          className="absolute w-[800px] h-[800px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${theme.redHatRedGlow} 0%, transparent 60%)`,
+            top: '-30%',
+            right: '-20%',
+          }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute w-[600px] h-[600px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${theme.purpleGlow} 0%, transparent 60%)`,
+            bottom: '-20%',
+            left: '-15%',
+          }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        />
+        <motion.div
+          className="absolute w-[400px] h-[400px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${theme.gpuGreenGlow} 0%, transparent 60%)`,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+          }}
+          animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.1, 0.3, 0.1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        />
       </div>
 
+      {/* Floating particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <FloatingParticle key={i} index={i} />
+        ))}
+      </div>
+
+      {/* Main content */}
+      <div className="relative z-10 text-center max-w-5xl px-8">
+        {/* Red Hat badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
+          style={{ 
+            background: `${theme.redHatRed}15`,
+            border: `1px solid ${theme.redHatRed}40`,
+          }}
+        >
+          <div 
+            className="w-6 h-6 rounded flex items-center justify-center"
+            style={{ background: theme.redHatRed }}
+          >
+            <span className="text-white text-xs font-bold">RH</span>
+          </div>
+          <span style={{ color: theme.redHatRedLight }} className="text-sm font-medium">
+            Red Hat OpenShift AI
+          </span>
+        </motion.div>
+
+        {/* Main title */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
+        >
+          <span 
+            className="bg-clip-text text-transparent"
+            style={{ backgroundImage: theme.gradientRedGold }}
+          >
+            GPU-as-a-Service
+          </span>
+          <br />
+          <span style={{ color: theme.white }} className="text-4xl md:text-5xl lg:text-6xl">
+            Multi-Cluster AI Workloads
+          </span>
+        </motion.h1>
+
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="text-xl md:text-2xl mb-10 max-w-3xl mx-auto"
+          style={{ color: theme.textSecondary }}
+        >
+          Intelligent workload scheduling across hybrid cloud with{' '}
+          <span style={{ color: theme.cyan }} className="font-semibold">RHACM</span>,{' '}
+          <span style={{ color: theme.gpuGreen }} className="font-semibold">Kueue</span>, and{' '}
+          <span style={{ color: theme.purpleLight }} className="font-semibold">LlamaStack</span>
+        </motion.p>
+
+        {/* GPU chips decoration */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="flex items-center justify-center gap-4 mb-10"
+        >
+          <GPUChip delay={0.8} size={50} />
+          <GPUChip delay={0.9} size={60} />
+          <GPUChip delay={1.0} size={70} />
+          <GPUChip delay={1.1} size={60} />
+          <GPUChip delay={1.2} size={50} />
+        </motion.div>
+
+        {/* Feature pills */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.6 }}
+          className="flex flex-wrap items-center justify-center gap-3"
+        >
+          {[
+            { icon: '🎯', label: 'Smart Placement', color: theme.redHatRed },
+            { icon: '⚡', label: 'Distributed Inference', color: theme.gpuGreen },
+            { icon: '🤖', label: 'Agentic AI', color: theme.purpleLight },
+            { icon: '🔄', label: 'Multi-Cluster', color: theme.cyan },
+          ].map((item, i) => (
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.2 + i * 0.1 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-full"
+              style={{ 
+                background: theme.glassBg,
+                border: `1px solid ${theme.glassBorder}`,
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <span className="text-lg">{item.icon}</span>
+              <span style={{ color: item.color }} className="text-sm font-medium">
+                {item.label}
+              </span>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+
+      {/* Navigation hint */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.6 }}
+        transition={{ delay: 2 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex flex-col items-center gap-2"
+          style={{ color: theme.textMuted }}
+        >
+          <span className="text-xs">Press → or Space to continue</span>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
