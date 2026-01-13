@@ -28,15 +28,15 @@
 
 ```mermaid
 flowchart TD
-    A[User submits Job] --> B[Workload created]
-    B --> C[Job suspended]
-    C --> D[Workload queued in LocalQueue]
-    D --> E{ClusterQueue evaluates}
-    E --> F{Quota available?}
-    E --> G{AdmissionChecks pass?}
-    F --> |Yes| H[Job unsuspended]
-    G --> |Yes| H
-    H --> I[✅ Job runs on cluster]
+    A["1️⃣ User submits Job"] --> B["2️⃣ Workload created"]
+    B --> C["3️⃣ Job suspended"]
+    C --> D["4️⃣ Queued in LocalQueue"]
+    D --> E{"5️⃣ ClusterQueue evaluates"}
+    E --> F{"Quota available?"}
+    E --> G{"AdmissionChecks pass?"}
+    F -->|Yes| H["6️⃣ Job unsuspended"]
+    G -->|Yes| H
+    H --> I["7️⃣ Job runs ✅"]
     
     style A fill:#4fc3f7,color:#000
     style I fill:#66bb6a,color:#000
@@ -78,16 +78,16 @@ Without MultiKueue, organizations face challenges:
 
 ```mermaid
 flowchart LR
-    subgraph step1["Step 1"]
-        p1["RHACM user creates<br/>Placement for distributing<br/>batch workloads"]
+    subgraph step1["1️⃣ Create Placement"]
+        p1["Admin creates Placement<br/>to distribute workloads"]
     end
     
-    subgraph step2["Step 2"]
-        p2["RHACM integrates Placement<br/>by generating MultiKueueConfig<br/>& MultiKueueCluster resources"]
+    subgraph step2["2️⃣ Generate Resources"]
+        p2["RHACM generates<br/>MultiKueueConfig &<br/>MultiKueueCluster"]
     end
     
-    subgraph step3["Step 3"]
-        p3["Batch workloads are placed<br/>and run across managed<br/>clusters via MultiKueue"]
+    subgraph step3["3️⃣ Run Workloads"]
+        p3["Jobs dispatched to<br/>managed clusters<br/>via MultiKueue"]
     end
     
     step1 --> step2 --> step3
@@ -185,18 +185,18 @@ With RHACM + MultiKueue:
 flowchart LR
     subgraph users["👥 Users"]
         ds["Data Scientist"]
-        admin["Hub Admin"]
+        admin["Hub Admin "]
     end
     
-    subgraph hub["RHACM Hub Cluster"]
-        lq["LocalQueue"] --> cq["ClusterQueue"]
-        cq --> pl["Placement"]
+    subgraph hub["🏢 RHACM Hub"]
+        lq["LocalQueue "] --> cq["ClusterQueue"]
+        cq --> pl["Placement  "]
         admin -.->|Creates| pl
     end
     
     ds -->|Submit Job| lq
-    pl --> g1["🟢 GPU Cluster 1<br/>(Job runs here)"]
-    pl -.-> g2["⚪ GPU Cluster 2<br/>(standby)"]
+    pl --> g1["🟢 GPU Cluster 1"]
+    pl -.-> g2["⚪ GPU Cluster 2"]
     
     style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
     style g1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:2px,color:#fff
@@ -218,21 +218,18 @@ Organizations can set up **separate placements for different teams** with their 
 
 ```mermaid
 flowchart TB
-    subgraph hub["RHACM Hub Cluster + Kueue Manager"]
-        bp["BluePlacement"] --> blq["BlueLocalQueue"]
-        rp["RedPlacement"] --> rlq["RedLocalQueue"]
-        blq --> bcq["BlueClusterQueue (MK)"]
-        rlq --> rcq["RedClusterQueue (MK)"]
-        
-        acc["RHACM Admission Check Controller"]
-        kac["Kueue Admission Check Controller"]
+    subgraph hub["🏢 RHACM Hub + Kueue Manager"]
+        bp["Blue Placement"] --> blq["Blue LocalQueue"]
+        rp["Red Placement "] --> rlq["Red LocalQueue "]
+        blq --> bcq["Blue ClusterQueue"]
+        rlq --> rcq["Red ClusterQueue "]
     end
     
-    subgraph clusters["Managed Clusters"]
-        c1["Cluster 1<br/>Cheap CPUs"]
-        c2["Cluster 2<br/>Workhorse GPUs"]
-        c3["Cluster 3<br/>Mixed"]
-        c4["Cluster 4<br/>Gold Class"]
+    subgraph clusters["📦 Managed Clusters"]
+        c1["Cluster 1: CPUs "]
+        c2["Cluster 2: GPUs "]
+        c3["Cluster 3: Mixed"]
+        c4["Cluster 4: Gold "]
     end
     
     bcq --> c1
@@ -240,8 +237,8 @@ flowchart TB
     rcq --> c3
     rcq --> c4
     
-    ds1["👤 Blue Team<br/>Data Scientist"] --> blq
-    ds2["👤 Red Team<br/>Data Scientist"] --> rlq
+    ds1["👤 Blue Team"] --> blq
+    ds2["👤 Red Team "] --> rlq
     
     style hub fill:#1a1a2e,stroke:#4fc3f7,color:#fff
     style bp fill:#1565c0,color:#fff
