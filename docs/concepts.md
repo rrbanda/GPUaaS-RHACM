@@ -2,10 +2,7 @@
 
 ## Overview: WHAT, WHY, HOW
 
-| | WHAT | WHY | HOW |
-|---|------|-----|-----|
-| **1** | Kueue is a Kubernetes-native job scheduler | Kueue improves on the default Kubernetes scheduler by optimizing for batch workloads | Kueue's MultiKueue mode extends this functionality into a multi-cluster environment |
-| **2** | It's used for anything from standard services to complex AI/ML workloads | Kueue allows for resource bursting, quotas, K8s-optimized utilization, and more | RHACM installs, configures, and integrates MultiKueue with Placement across clusters |
+![WHAT, WHY, HOW Overview](assets/slides/what-why-how.png)
 
 ---
 
@@ -23,24 +20,6 @@
 | **Priority-based Scheduling** | Higher priority jobs get resources first |
 | **Preemption** | Evict lower priority jobs when needed |
 | **Resource Bursting** | Temporarily exceed quotas when capacity is available |
-
-### How Kueue Works
-
-```mermaid
-flowchart TD
-    A["1️⃣ User submits Job"] --> B["2️⃣ Workload created"]
-    B --> C["3️⃣ Job suspended"]
-    C --> D["4️⃣ Queued in LocalQueue"]
-    D --> E{"5️⃣ ClusterQueue evaluates"}
-    E --> F{"Quota available?"}
-    E --> G{"AdmissionChecks pass?"}
-    F -->|Yes| H["6️⃣ Job unsuspended"]
-    G -->|Yes| H
-    H --> I["7️⃣ Job runs ✅"]
-    
-    style A fill:#4fc3f7,color:#000
-    style I fill:#66bb6a,color:#000
-```
 
 ### Why Kueue for AI/ML Workloads?
 
@@ -76,28 +55,11 @@ Without MultiKueue, organizations face challenges:
 
 ### How RHACM Enables MultiKueue
 
-```mermaid
-flowchart LR
-    subgraph step1["1️⃣ Create Placement"]
-        p1["Admin creates Placement<br/>to distribute workloads"]
-    end
-    
-    subgraph step2["2️⃣ Generate Resources"]
-        p2["RHACM generates<br/>MultiKueueConfig &<br/>MultiKueueCluster"]
-    end
-    
-    subgraph step3["3️⃣ Run Workloads"]
-        p3["Jobs dispatched to<br/>managed clusters<br/>via MultiKueue"]
-    end
-    
-    step1 --> step2 --> step3
-    
-    style step1 fill:#1a1a2e,stroke:#4fc3f7,color:#fff
-    style step2 fill:#1a1a2e,stroke:#4fc3f7,color:#fff
-    style step3 fill:#1a1a2e,stroke:#66bb6a,color:#fff
-```
+![Placement Flow - 3 Steps](assets/slides/placement-flow-3step.png)
 
 ### The Kueue Add-on
+
+![Add-on Flow - 4 Steps](assets/slides/addon-flow-4step.png)
 
 An **add-on** is a framework provided by RHACM for managing the configuration and lifecycle of operators on managed clusters.
 
@@ -181,27 +143,7 @@ With RHACM + MultiKueue:
 3. **Jobs run on the best cluster** - automatically selected
 4. **Results sync back** to the hub
 
-```mermaid
-flowchart LR
-    subgraph users["👥 Users"]
-        ds["Data Scientist"]
-        admin["Hub Admin "]
-    end
-    
-    subgraph hub["🏢 RHACM Hub"]
-        lq["LocalQueue "] --> cq["ClusterQueue"]
-        cq --> pl["Placement  "]
-        admin -.->|Creates| pl
-    end
-    
-    ds -->|Submit Job| lq
-    pl --> g1["🟢 GPU Cluster 1"]
-    pl -.-> g2["⚪ GPU Cluster 2"]
-    
-    style hub fill:#1a1a2e,stroke:#4fc3f7,stroke-width:2px,color:#fff
-    style g1 fill:#1a1a2e,stroke:#66bb6a,stroke-width:2px,color:#fff
-    style g2 fill:#1a1a2e,stroke:#90a4ae,stroke-width:1px,color:#fff
-```
+![Detailed Flow - 5 Steps](assets/slides/detailed-flow-5step.png)
 
 ### Key Benefits for AI/ML Teams
 
@@ -212,42 +154,15 @@ flowchart LR
 
 ---
 
-## Multi-Team Scenario: Blue Team & Red Team
+## Multi-Team Scenario: Different Placements for Different Teams
 
 Organizations can set up **separate placements for different teams** with their own queues and cluster targeting:
 
-```mermaid
-flowchart TB
-    subgraph hub["🏢 RHACM Hub + Kueue Manager"]
-        bp["Blue Placement"] --> blq["Blue LocalQueue"]
-        rp["Red Placement "] --> rlq["Red LocalQueue "]
-        blq --> bcq["Blue ClusterQueue"]
-        rlq --> rcq["Red ClusterQueue "]
-    end
-    
-    subgraph clusters["📦 Managed Clusters"]
-        c1["Cluster 1: CPUs "]
-        c2["Cluster 2: GPUs "]
-        c3["Cluster 3: Mixed"]
-        c4["Cluster 4: Gold "]
-    end
-    
-    bcq --> c1
-    bcq --> c2
-    rcq --> c3
-    rcq --> c4
-    
-    ds1["👤 Blue Team"] --> blq
-    ds2["👤 Red Team "] --> rlq
-    
-    style hub fill:#1a1a2e,stroke:#4fc3f7,color:#fff
-    style bp fill:#1565c0,color:#fff
-    style blq fill:#1565c0,color:#fff
-    style bcq fill:#1565c0,color:#fff
-    style rp fill:#c62828,color:#fff
-    style rlq fill:#c62828,color:#fff
-    style rcq fill:#c62828,color:#fff
-```
+- **GPUPlacement** → Routes to GPU clusters (Cluster 2, Cluster 5)
+- **CPUPlacement** → Routes to CPU clusters (Cluster 1)
+- **GoldClassPlacement** → Routes to premium "Creme of the crop" clusters
+
+![Multi-Queue Architecture](assets/slides/multi-queue-architecture.png)
 
 ### Example Placements
 
