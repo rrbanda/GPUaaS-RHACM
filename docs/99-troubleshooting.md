@@ -4,37 +4,7 @@
 
 ## Known Issues and Workarounds
 
-### Issue 1: Spoke ClusterQueues Have Hub's Admission Checks
-
-**Symptom:**
-- Jobs dispatched to spoke but stay "Suspended"
-- Spoke's ClusterQueue has `admissionChecks` that should only be on hub
-
-**Diagnosis:**
-```bash
-# Check spoke ClusterQueue
-KUBECONFIG=$SPOKE_KUBECONFIG oc get clusterqueue -o yaml | grep -A 3 admissionChecks
-```
-
-If you see admission checks like `multikueue-demo`, this is incorrect.
-
-**Root Cause:**
-The RHACM kueue-addon template incorrectly copies the full ClusterQueue spec (including admission checks) to spoke clusters.
-
-**Workaround:**
-```bash
-# Remove admission checks from spoke ClusterQueues
-KUBECONFIG=$SPOKE_KUBECONFIG oc patch clusterqueue cluster-queue \
-  --type=json -p='[{"op": "remove", "path": "/spec/admissionChecks"}]'
-
-KUBECONFIG=$SPOKE_KUBECONFIG oc patch clusterqueue gpu-cluster-queue \
-  --type=json -p='[{"op": "remove", "path": "/spec/admissionChecks"}]'
-```
-
-> **Note:** The addon may overwrite this fix on its reconciliation loop. You may need to reapply after addon reconciliation.
-
-
-### Issue 3: MultiKueueCluster Shows CONNECTED=False
+### Issue 1: MultiKueueCluster Shows CONNECTED=False
 
 **Symptom:**
 ```bash

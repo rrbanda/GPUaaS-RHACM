@@ -35,9 +35,6 @@ oc get managedclusters                       # Managed clusters available?
 
 Then follow the **Getting Started** guides in the navigation above.
 
-!!! warning "Known Issue"
-    There is a known issue where the RHACM kueue-addon incorrectly deploys hub's ClusterQueue configuration to spoke clusters. See [Troubleshooting](99-troubleshooting.md) for the workaround.
-
 ## Status
 
 !!! info "Developer Preview"

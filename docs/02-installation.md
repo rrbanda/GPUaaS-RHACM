@@ -154,30 +154,6 @@ oc get multikueueconfig
 oc get admissioncheck
 ```
 
-## Step 6: Apply Workaround for Spoke ClusterQueues
-
-> ⚠️ **Important:** Due to a known issue, spoke ClusterQueues incorrectly have admission checks. Remove them:
-
-```bash
-# For each spoke cluster
-for cluster in spoke-cluster1 spoke-cluster2; do
-  echo "Fixing $cluster..."
-  
-  # Get kubeconfig for spoke (if using managed service account)
-  # Or login directly to spoke cluster
-  
-  oc patch clusterqueue cluster-queue \
-    --type=json \
-    -p='[{"op": "remove", "path": "/spec/admissionChecks"}]'
-done
-```
-
-Or use the provided script:
-
-```bash
-./scripts/fix-spoke-clusterqueues.sh
-```
-
 ## Verification Checklist
 
 | Component | Command | Expected |
