@@ -24,6 +24,15 @@ This demo uses **3 OpenShift clusters** - 1 hub and 2 spoke clusters:
 | **spoke-cluster1** | Worker | **NVIDIA L4 GPUs** | `accelerator=nvidia-l4` |
 | **spoke-cluster2** | Worker | CPU only | `cluster-type=cpu-only` |
 
+## What You Can Do
+
+As an administrator, you can:
+
+- **Install Kueue add-on for RHACM** - Enable RHBoK on managed clusters automatically
+- **Use Placement for MultiKueue** - Connect to spoke clusters and dispatch jobs through MultiKueue
+- **Label-based cluster selection** - Select clusters with specific attributes (e.g., `nvidia-l4` GPUs)
+- **Dynamic workload scheduling** - Use AddonPlacementScore to select clusters with more available GPU resources
+
 ## Quick Start
 
 ```bash

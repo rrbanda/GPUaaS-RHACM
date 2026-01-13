@@ -1,5 +1,14 @@
 # Concepts
 
+## Overview: WHAT, WHY, HOW
+
+| | WHAT | WHY | HOW |
+|---|------|-----|-----|
+| **1** | Kueue is a Kubernetes-native job scheduler | Kueue improves on the default Kubernetes scheduler by optimizing for batch workloads | Kueue's MultiKueue mode extends this functionality into a multi-cluster environment |
+| **2** | It's used for anything from standard services to complex AI/ML workloads | Kueue allows for resource bursting, quotas, K8s-optimized utilization, and more | RHACM installs, configures, and integrates MultiKueue with Placement across clusters |
+
+---
+
 ## What is Kueue?
 
 **Kueue** is a Kubernetes-native job scheduler that improves on the default Kubernetes scheduler by optimizing for **batch workloads**.
@@ -41,6 +50,21 @@ flowchart TD
 - **Resource Management**: Prevent GPU starvation across teams
 
 
+## The Limits of Single-Cluster Kueue
+
+Without MultiKueue, organizations face challenges:
+
+| Problem | Who Faces It | Impact |
+|---------|--------------|--------|
+| "Which cluster is best for my job?" | Data Scientists | Time wasted finding GPUs |
+| "I need more GPU but I'm not sure where to get it" | Data Scientists | Blocked work, missed deadlines |
+| "Why is no one using these GPUs?" | Hub Admins | Wasted resources, poor utilization |
+| "How do I configure all these Kueues?" | Hub Admins | Complex setup, support burden |
+
+**Result:** Fragmented workloads and under-utilized resources across clusters.
+
+---
+
 ## What is RHACM?
 
 **Red Hat Advanced Cluster Management (RHACM)** is a multi-cluster management platform that provides:
@@ -49,6 +73,44 @@ flowchart TD
 - **Application deployment** - deploy apps across clusters
 - **Policy enforcement** - ensure compliance across fleet
 - **Observability** - monitor all clusters from one place
+
+### How RHACM Enables MultiKueue
+
+```mermaid
+flowchart LR
+    subgraph step1["Step 1"]
+        p1["RHACM user creates<br/>Placement for distributing<br/>batch workloads"]
+    end
+    
+    subgraph step2["Step 2"]
+        p2["RHACM integrates Placement<br/>by generating MultiKueueConfig<br/>& MultiKueueCluster resources"]
+    end
+    
+    subgraph step3["Step 3"]
+        p3["Batch workloads are placed<br/>and run across managed<br/>clusters via MultiKueue"]
+    end
+    
+    step1 --> step2 --> step3
+    
+    style step1 fill:#1a1a2e,stroke:#4fc3f7,color:#fff
+    style step2 fill:#1a1a2e,stroke:#4fc3f7,color:#fff
+    style step3 fill:#1a1a2e,stroke:#66bb6a,color:#fff
+```
+
+### The Kueue Add-on
+
+An **add-on** is a framework provided by RHACM for managing the configuration and lifecycle of operators on managed clusters.
+
+| Component | Description |
+|-----------|-------------|
+| **RHBoK Operator** | Made available via Operator Hub, distributed to managed clusters by RHACM add-on |
+| **Add-on Agent** | Runs in each managed cluster, applies configurations from hub |
+| **Admission Check Controllers** | Two controllers: MultiKueue controller + Placement-to-MultiKueue converter |
+
+The add-on:
+1. Automates deployment and configuration of MultiKueue
+2. Provides hassle-free integration into your existing environment
+3. Generates `MultiKueueConfig` and `MultiKueueCluster` resources from RHACM Placement decisions
 
 ### Key RHACM Concepts for MultiKueue
 
@@ -138,6 +200,35 @@ flowchart LR
 - **Optimal GPU utilization** - jobs go where GPUs are available
 - **Simplified operations** - RHACM addon handles configuration
 - **Scale easily** - add clusters to the ManagedClusterSet
+
+
+## The Value of RHACM + MultiKueue
+
+| Benefit | Description |
+|---------|-------------|
+| **Cross-cluster shared resources** | Run jobs on many clusters from a single entry point |
+| **Integration with RHACM Placement** | Use labels, scores, and policies for cluster selection |
+| **Automatic configuration** | Add-on handles all MultiKueue setup |
+| **Centralized management** | Queue resources managed from a single hub |
+| **Intelligent workload placement** | Enhanced multicluster scheduling |
+
+### Why Use RHACM for MultiKueue?
+
+- **GPU as a Service** - Centralized GPU resource management
+- **Multi-cloud support** - Heterogeneous environments (AWS, Azure, on-prem)
+- **Supported solution** - RHBoK from Red Hat, MultiKueue via RHACM add-on
+- **Gateway to fleet management** - Cloud, managed, and bare metal support
+
+> **Status:** Developer Preview in RHACM 2.15
+
+
+## Resources
+
+| Resource | Link |
+|----------|------|
+| OCM + MultiKueue Quick Setup | [addon-contrib/kueue-addon](https://github.com/open-cluster-management-io/addon-contrib/tree/main/kueue-addon) |
+| MultiKueue Documentation | [kueue.sigs.k8s.io/docs/concepts/multikueue](https://kueue.sigs.k8s.io/docs/concepts/multikueue/) |
+| RHACM Documentation | [Red Hat ACM Docs](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes) |
 
 
 ## Next Steps
