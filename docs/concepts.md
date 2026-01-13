@@ -195,6 +195,55 @@ Data scientists **only need to know which LocalQueue to use**:
 
 ## Use Case: Red Hat OpenShift AI (RHOAI) with MultiKueue
 
+### Entry Points for AI Workloads
+
+Data Scientists have multiple tools to interact with the GPU-as-a-Service platform:
+
+| Entry Point | Description | GPU Required |
+|-------------|-------------|--------------|
+| **RHOAI** | Red Hat OpenShift AI - Jupyter notebooks, pipelines, model serving | Optional (for development) |
+| **MCP** | Model Context Protocol - Agentic AI workflows, orchestration | ❌ No |
+| **ETC** | Other tools - CLI, custom applications | Varies |
+
+!!! info "Important Distinction"
+    **Agentic workloads and MCP servers do NOT need GPUs** to run. They orchestrate and coordinate work. 
+    **LLMs (Large Language Models)** are what need GPUs for inference and training.
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  DATA SCIENTIST TOOLS (No GPU required for these)                       │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐               │
+│  │    RHOAI      │  │  MCP Servers  │  │     ETC       │               │
+│  │  • Jupyter    │  │  • Agentic AI │  │  • CLI        │               │
+│  │  • Pipelines  │  │  • Orchestrate│  │  • Custom     │               │
+│  └───────┬───────┘  └───────┬───────┘  └───────┬───────┘               │
+│          │                  │                  │                        │
+│          └──────────────────┼──────────────────┘                        │
+│                             ▼                                           │
+│           Submit LLM/Training Jobs to Kueue LocalQueues                 │
+│                   (GPU-intensive workloads)                             │
+└─────────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  RHACM HUB + MULTIKUEUE                                                 │
+│  • Kueue queues receive jobs                                            │
+│  • Placement rules determine best GPU cluster                           │
+│  • MultiKueue dispatches to worker clusters                             │
+└─────────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  GPU WORKER CLUSTERS (GPU required for these workloads)                 │
+│  • LLM Inference (Llama, Mistral, etc.)                                │
+│  • Model Training                                                       │
+│  • Fine-tuning (LoRA, QLoRA)                                           │
+│  • Embedding generation                                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
 ### The Challenge
 
 **Data Scientists** using RHOAI face common problems:
@@ -213,15 +262,17 @@ Data scientists **only need to know which LocalQueue to use**:
 
 With RHACM + MultiKueue:
 
-1. **Data scientists submit jobs** to a single LocalQueue
-2. **Placement routes jobs** to clusters with available GPUs
-3. **Jobs run on the best cluster** - automatically selected
-4. **Results sync back** to the hub
+1. **Data scientists use their preferred tools** (RHOAI, MCP, CLI)
+2. **Submit GPU-intensive jobs** to Kueue LocalQueues on the hub
+3. **Placement routes jobs** to clusters with available GPUs
+4. **Jobs run on the best cluster** - automatically selected
+5. **Results sync back** to the hub
 
 ![Detailed Flow - 5 Steps](assets/slides/detailed-flow-5step.png)
 
 ### Key Benefits for AI/ML Teams
 
+- **Tool flexibility** - use RHOAI, MCP servers, or any client
 - **No cluster hunting** - submit to one queue, get best cluster
 - **Optimal GPU utilization** - jobs go where GPUs are available
 - **Simplified operations** - RHACM addon handles configuration

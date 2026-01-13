@@ -139,7 +139,7 @@ export default function Slide7() {
           >
             <PersonaIcon type="scientist" />
             <div className="mt-2 text-xs text-gray-500 bg-gray-800/50 px-2 py-1 rounded text-center">
-              RHOAI / MCP
+              RHOAI / MCP / ETC
             </div>
           </motion.div>
         </div>

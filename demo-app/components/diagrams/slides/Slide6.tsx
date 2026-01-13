@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { theme } from './shared/theme';
 
-// Slide 6: RHOAI Integration - Data Scientists submitting from RHOAI/MCP
+// Slide 6: RHOAI Integration - Data Scientists submitting from RHOAI / MCP / ETC
 
 const RHBoKBadge = ({ size = 'md' }: { size?: 'sm' | 'md' }) => (
   <div 
@@ -92,7 +92,7 @@ export default function Slide6() {
         animate={{ opacity: 1 }}
         className="text-center text-white text-base font-semibold mb-3"
       >
-        RHOAI Integration
+        Entry Points: RHOAI / MCP / ETC
       </motion.h3>
 
       {/* Main layout */}
@@ -130,7 +130,7 @@ export default function Slide6() {
               transition={{ delay: 0.4 }}
             >
               <div className="text-sm text-purple-300 font-semibold">MCP</div>
-              <div className="text-xs text-gray-400">ML Pipelines</div>
+              <div className="text-xs text-gray-400">Agentic AI</div>
             </motion.div>
           </motion.div>
 
