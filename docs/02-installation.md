@@ -82,16 +82,21 @@ helm repo update
 
 # Create values file for OpenShift
 cat <<EOF > kueue-addon-values.yaml
+# Kueue controller namespace
 kueue:
   namespace: "openshift-kueue-operator"
 
-skipClusterSetBinding: true
-
+# Placement for cluster selection
 placement:
   name: default
 
+# ManagedClusterSetBinding - chart creates it automatically when false
+skipClusterSetBinding: false
+
+# Enable installation via OLM operator
 installKueueViaOperator: true
 
+# Kueue Operator configuration (required when installKueueViaOperator: true)
 kueueOperator:
   name: kueue-operator
   namespace: openshift-kueue-operator
@@ -100,6 +105,37 @@ kueueOperator:
   source: redhat-operators
   sourceNamespace: openshift-marketplace
   startingCSV: kueue-operator.v1.2.0
+
+# Cert Manager Operator configuration (required when installKueueViaOperator: true)
+certManagerOperator:
+  name: openshift-cert-manager-operator
+  namespace: cert-manager-operator
+  operatorGroupName: cert-manager-operator
+  channel: stable-v1
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  startingCSV: cert-manager-operator.v1.14.0
+
+# Kueue CR customization (required when installKueueViaOperator: true)
+kueueCR:
+  spec:
+    managementState: Managed
+    config:
+      integrations:
+        frameworks:
+          - BatchJob
+
+# Network Policy (optional - enable if network policies are enforced)
+# networkPolicy:
+#   name: kueue-allow-egress-cluster-proxy-dns
+#   namespace: openshift-kueue-operator
+#   spec: {}
+
+# Cluster Proxy (optional - for accessing spoke clusters through proxy)
+# clusterProxy:
+#   url: ""
+#   impersonation:
+#     enabled: false
 EOF
 
 # Install
@@ -108,6 +144,8 @@ helm install kueue-addon ocm/kueue-addon \
   --create-namespace \
   -f kueue-addon-values.yaml
 ```
+
+> **Note:** The chart automatically creates the `ManagedClusterSetBinding` when `skipClusterSetBinding: false` (default).
 
 ### Verify Addon Installation
 
@@ -122,21 +160,7 @@ oc get clustermanagementaddon multicluster-kueue-manager
 oc get managedclusteraddons -A | grep kueue
 ```
 
-## Step 4: Create ManagedClusterSetBinding
-
-```bash
-cat <<EOF | oc apply -f -
-apiVersion: cluster.open-cluster-management.io/v1beta2
-kind: ManagedClusterSetBinding
-metadata:
-  name: global
-  namespace: openshift-kueue-operator
-spec:
-  clusterSet: global
-EOF
-```
-
-## Step 5: Verify MultiKueue Setup
+## Step 4: Verify MultiKueue Setup
 
 ```bash
 # Check MultiKueueClusters are connected
