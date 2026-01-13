@@ -68,9 +68,9 @@ export const theme = {
 
 // Animation presets
 export const animations = {
-  springStiff: { type: 'spring', stiffness: 400, damping: 30 },
-  springBouncy: { type: 'spring', stiffness: 300, damping: 20 },
-  springSmooth: { type: 'spring', stiffness: 200, damping: 25 },
+  springStiff: { type: 'spring' as const, stiffness: 400, damping: 30 },
+  springBouncy: { type: 'spring' as const, stiffness: 300, damping: 20 },
+  springSmooth: { type: 'spring' as const, stiffness: 200, damping: 25 },
   fadeIn: { initial: { opacity: 0 }, animate: { opacity: 1 } },
   slideUp: { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 } },
   slideDown: { initial: { opacity: 0, y: -30 }, animate: { opacity: 1, y: 0 } },
