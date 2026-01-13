@@ -1,5 +1,9 @@
 source "https://rubygems.org"
 
-gem "github-pages", group: :jekyll_plugins
-gem "jekyll-remote-theme"
-gem "just-the-docs"
+gem "jekyll", "~> 4.3"
+gem "just-the-docs", "~> 0.7"
+gem "jekyll-seo-tag"
+gem "jekyll-github-metadata"
+
+# Required for Ruby 3.0+
+gem "webrick"
