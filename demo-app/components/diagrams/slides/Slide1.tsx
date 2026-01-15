@@ -131,24 +131,14 @@ export default function Slide1() {
 
       {/* Main content */}
       <div className="relative z-10 text-center max-w-5xl px-8">
-        {/* Red Hat badge */}
+        {/* OpenShift AI badge */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
-          style={{ 
-            background: `${theme.redHatRed}15`,
-            border: `1px solid ${theme.redHatRed}40`,
-          }}
+          className="mb-8"
         >
-          <div 
-            className="w-6 h-6 rounded flex items-center justify-center"
-            style={{ background: theme.redHatRed }}
-          >
-            <span className="text-white text-xs font-bold">RH</span>
-          </div>
-          <span style={{ color: theme.redHatRedLight }} className="text-sm font-medium">
+          <span style={{ color: theme.white }} className="text-lg font-semibold">
             Red Hat OpenShift AI
           </span>
         </motion.div>
